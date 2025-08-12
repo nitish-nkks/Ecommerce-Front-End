@@ -1,0 +1,222 @@
+/* Shared HomePage Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Loading animation for images */
+.banner-image,
+.category-image {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+@keyframes floatReverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(20px) rotate(-180deg); }
+}
+
+/* Common button styles */
+.btn {
+  flex: 0 0 auto;
+  padding: 5px 12px 5px 8px;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-green {
+  background: #059669;
+  color: white;
+}
+
+.btn-green:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.btn-blue {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-blue:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-orange {
+  background: #fb923c;
+  color: white;
+}
+
+.btn-orange:hover {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+/* Navigation arrow common styles */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #374151;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.nav-arrow:hover {
+  background: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-arrow.prev {
+  left: 10px;
+}
+
+.nav-arrow.next {
+  right: 10px;
+}
+
+/* Product card common styles */
+.product-price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.current-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.old-price {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.discount {
+  background: #dc2626;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+/* Section headers */
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+}
+
+.section-header::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.section-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #1f2937;
+  margin-bottom: 16px;
+  text-shadow: 0 4px 8px rgba(18, 180, 49, 0.1);
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  color: #4b5563;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.section-title-green {
+  background: linear-gradient(135deg, #12b431, #0ea025, #16a34a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-title-blue {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8, #2563eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+
+  .nav-arrow {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 4px 10px 4px 6px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.9rem;
+  }
+}
