@@ -1,4 +1,3 @@
-// src/components/Pages/CheckoutPage.jsx
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { ArrowLeft, CreditCard, Truck, Shield, MapPin } from "lucide-react";
@@ -16,14 +15,12 @@ const normalizeAddressArray = (res) => {
 const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
-  // addresses & form
   const [addresses, setAddresses] = useState([]);
   const [addressForm, setAddressForm] = useState({ addressLine: "", city: "", state: "", zipCode: "" });
 
   const handleZipChange = async (e) => {
     const value = e.target.value;
     setAddressForm(p => ({ ...p, zipCode: value }));
-
     if (/^\d{5,6}$/.test(value)) {
       try {
         const res = await fetch(`https://api.postalpincode.in/pincode/${value}`);
@@ -53,7 +50,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
   const [loading, setLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
 
-  // payment & other fields
   const [formData, setFormData] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -67,21 +63,14 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [message, setMessage] = useState(null);
-
-  // UI toggles for add/edit/delete
   const [showAddForm, setShowAddForm] = useState(false);
   const [deletingAddressId, setDeletingAddressId] = useState(null);
-  const fetchedRef = useRef(false); // prevents double fetch in StrictMode
-
-  // totals
+  const fetchedRef = useRef(false);
   const subtotal = typeof getCartTotal === "function" ? getCartTotal() : cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = formData.shippingMethod === "express" ? 99 : 49;
   const tax = subtotal * 0.18;
   const total = subtotal + shipping + tax;
 
-  // -------------------- network helpers --------------------
-
-  // fetchAddresses needs to be defined BEFORE useEffect
   const fetchAddresses = async () => {
     setLoading(true);
     setMessage(null);
@@ -96,16 +85,12 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    // avoid double fetch in dev StrictMode:
     if (fetchedRef.current) return;
     fetchedRef.current = true;
     fetchAddresses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Add address (returns created address)
   const addAddressAsync = async (addr) => {
     setIsAddingAddress(true);
     setMessage(null);
@@ -117,7 +102,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
         ZipCode: addr.zipCode,
       };
       const res = await axiosInstance.post("/CustomerAddresses", payload);
-      // created object expected at res.data.data
       const created = res?.data?.data ?? res?.data;
       if (Array.isArray(created)) return created[0];
       return created;
@@ -129,8 +113,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       setIsAddingAddress(false);
     }
   };
-
-  // Delete address
   const deleteAddressAsync = async (addressId) => {
     try {
       const res = await axiosInstance.delete(`/CustomerAddresses/${addressId}`);
@@ -142,8 +124,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       throw err;
     }
   };
-
-  // Place order (uses backend's CreateOrderDto: CustomerAddressId + PaymentMethod)
   const placeOrderAsync = async (orderPayload) => {
     setIsPlacingOrder(true);
     setMessage(null);
@@ -167,30 +147,23 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       setIsPlacingOrder(false);
     }
   };
-
-  // -------------------- UI helpers & validation --------------------
-
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     const parts = [];
     for (let i = 0; i < v.length; i += 4) parts.push(v.substring(i, i + 4));
     return parts.join(" ").trim();
   };
-
   const handleCardNumberChange = (e) => {
     const formatted = formatCardNumber(e.target.value);
     setFormData((p) => ({ ...p, cardNumber: formatted }));
   };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
-
   const validateForm = () => {
     const newErrors = {};
-    // If there are no saved addresses, require addressForm
     if (addresses.length === 0 || showAddForm) {
       if (!addressForm.addressLine.trim()) newErrors.addressLine = "Address Line is required";
       if (!addressForm.city.trim()) newErrors.city = "City is required";
@@ -199,8 +172,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
     } else {
       if (!selectedAddressId) newErrors.selectedAddress = "Please select an address";
     }
-
-    // Payment validation (client-side only)
     if (formData.paymentMethod === "card") {
       const rawCard = (formData.cardNumber || "").replace(/\s/g, "");
       if (!rawCard) newErrors.cardNumber = "Card number is required";
@@ -210,25 +181,19 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       else if (!/^\d{3}$/.test(formData.cvv)) newErrors.cvv = "CVV must be 3 digits";
       if (!formData.cardName.trim()) newErrors.cardName = "Cardholder name is required";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  // Add address (UI click)
   const handleAddAddress = async () => {
-    // client validation
     const addrErr = {};
     if (!addressForm.addressLine.trim()) addrErr.addressLine = "Address Line is required";
     if (!addressForm.city.trim()) addrErr.city = "City is required";
     if (!addressForm.state.trim()) addrErr.state = "State is required";
     if (!/^[0-9]{5,6}$/.test(addressForm.zipCode)) addrErr.zipCode = "Please enter a valid 5 or 6-digit pincode";
-
     if (Object.keys(addrErr).length) {
       setErrors((p) => ({ ...p, ...addrErr }));
       return;
     }
-
     try {
       const newAddr = await addAddressAsync(addressForm);
       setAddresses((prev) => [newAddr, ...prev]);
@@ -237,10 +202,8 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       setShowAddForm(false);
       setMessage({ type: "success", text: "Address added." });
     } catch (err) {
-      // error already shown by addAddressAsync
     }
   };
-
   const handleUpdateAddress = async () => {
     try {
       setIsAddingAddress(true);
@@ -261,79 +224,57 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       setIsAddingAddress(false);
     }
   };
-
-  // Delete handler
   const handleDeleteAddress = async (addressId) => {
     const ok = window.confirm("Are you sure you want to delete this address?");
     if (!ok) return;
-
     setDeletingAddressId(Number(addressId));
     try {
       await deleteAddressAsync(addressId);
-
-      // update UI (server marks isActive=false)
       setAddresses((prev) => prev.filter((a) => Number(a.id) !== Number(addressId)));
-
-      // if the deleted address was selected, pick first or null
       if (Number(selectedAddressId) === Number(addressId)) {
         const remaining = addresses.filter((a) => Number(a.id) !== Number(addressId));
         setSelectedAddressId(remaining.length ? Number(remaining[0].id) : null);
       }
-
       setMessage({ type: "success", text: "Address deleted." });
     } catch (err) {
-      // message already set in deleteAddressAsync
     } finally {
       setDeletingAddressId(null);
     }
   };
-
-  // Final submit: ensure address exists (create if needed), then place order
   const handleSubmit = async (e) => {
     try {
       await updateCustomerAddress(selectedAddressId, formData);
       alert("Address updated successfully!");
-      // refresh or redirect as needed
     } catch (error) {
       console.error("Error updating address:", error);
     }
     e.preventDefault();
     setMessage(null);
-
-    // if showAddForm true we intend to create address (or user could choose saved)
     if (!validateForm()) return;
-
     try {
       let shippingAddress = null;
       if (addresses.length > 0 && !showAddForm && selectedAddressId) {
         shippingAddress = addresses.find((a) => Number(a.id) === Number(selectedAddressId));
       } else {
-        // create address first
         const newAddr = await addAddressAsync(addressForm);
         setAddresses((prev) => [newAddr, ...prev]);
         setSelectedAddressId(Number(newAddr.id));
         shippingAddress = newAddr;
       }
-
       if (!shippingAddress) {
         setMessage({ type: "error", text: "Selected shipping address not found." });
         return;
       }
-
-      // Build minimal payload expected by backend (CreateOrderDto)
       const orderPayload = {
         CustomerAddressId: Number(shippingAddress.id),
         PaymentMethod: formData.paymentMethod,
       };
-
       const result = await placeOrderAsync(orderPayload);
       if (onOrderPlaced) onOrderPlaced(result);
     } catch (err) {
       console.error(err);
     }
   };
-
-  // Helper: prefill add form for "Edit" action (note: API has no update endpoint)
   const handlePrefillForEdit = (addr) => {
     setIsEditing(true);
     setEditingAddressId(addr.id);
@@ -345,9 +286,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
     });
     setShowAddForm(true);
   };
-
-
-  // -------------------- JSX (kept your styles/layout) --------------------
   return (
     <div className="checkout-page">
       <style jsx>{`
@@ -355,19 +293,16 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           min-height: 100vh;
           background: white;
         }
-
         .checkout-container {
           max-width: 1500px;
           margin: 0 auto;
           padding: 0;
         }
-
         .checkout-header {
           background: white;
           border-bottom: 1px solid #e7e7e7;
           padding: 24px 0;
         }
-
         .header-content {
           max-width: 1200px;
           margin: 0 auto;
@@ -376,7 +311,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           align-items: center;
           gap: 16px;
         }
-
         .back-btn {
           background: transparent;
           border: 1px solid #d5d9dd;
@@ -390,36 +324,30 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           font-size: 13px;
           transition: all 0.15s ease;
         }
-
         .back-btn:hover {
           background: #f7f8f8;
           border-color: #adb1b8;
         }
-
         .checkout-title {
           font-size: 28px;
           font-weight: 400;
           color: #0f1111;
           margin: 0;
         }
-
         .main-content {
           max-width: 1200px;
           margin: 0 auto;
           padding: 0 20px;
         }
-
         .checkout-content {
           display: grid;
           grid-template-columns: 1fr 300px;
           gap: 24px;
           margin-top: 20px;
         }
-
         .checkout-form {
           background: transparent;
         }
-
         .form-section {
           background: white;
           border: 1px solid #d5d9dd;
@@ -427,7 +355,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           padding: 20px;
           margin-bottom: 20px;
         }
-
         .section-title {
           font-size: 18px;
           font-weight: 400;
@@ -436,21 +363,17 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           padding-bottom: 8px;
           border-bottom: 1px solid #e7e7e7;
         }
-
         .form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 12px;
         }
-
         .form-group {
           margin-bottom: 12px;
         }
-
         .form-group.full-width {
           grid-column: 1 / -1;
         }
-
         .form-label {
           display: block;
           font-size: 13px;
@@ -458,7 +381,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           color: #0f1111;
           margin-bottom: 4px;
         }
-
         .form-input {
           width: 100%;
           padding: 8px 12px;
@@ -468,18 +390,15 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           transition: all 0.15s ease;
           background: white;
         }
-
         .form-input:focus {
           outline: none;
           border-color: #e77600;
           box-shadow: 0 0 3px 2px rgba(228, 121, 17, .5);
         }
-
         .form-input.error {
           border-color: #d00;
           box-shadow: 0 0 3px 2px rgba(221, 0, 0, .5);
         }
-
         .form-select {
           width: 100%;
           padding: 8px 12px;
@@ -490,26 +409,22 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           cursor: pointer;
           transition: all 0.15s ease;
         }
-
         .form-select:focus {
           outline: none;
           border-color: #e77600;
           box-shadow: 0 0 3px 2px rgba(228, 121, 17, .5);
         }
-
         .error-message {
           color: #d00;
           font-size: 12px;
           margin-top: 4px;
         }
-
         .radio-group {
           display: flex;
           flex-direction: column;
           gap: 8px;
           margin-top: 8px;
         }
-
         .radio-option {
           display: flex;
           align-items: center;
@@ -520,24 +435,20 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           border-radius: 4px;
           transition: all 0.15s ease;
         }
-
         .radio-option:hover {
           border-color: #adb1b8;
           background: #f7f8f8;
         }
-
         .radio-input {
           width: 14px;
           height: 14px;
           margin: 0;
         }
-
         .radio-label {
           font-size: 14px;
           color: #0f1111;
           margin: 0;
         }
-
         .order-summary {
           background: white;
           border: 1px solid #d5d9dd;
@@ -547,7 +458,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           position: sticky;
           top: 20px;
         }
-
         .summary-title {
           font-size: 18px;
           font-weight: 400;
@@ -556,22 +466,18 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           padding-bottom: 8px;
           border-bottom: 1px solid #e7e7e7;
         }
-
         .cart-items {
           margin-bottom: 24px;
         }
-
         .cart-item {
           display: flex;
           align-items: center;
           padding: 12px 0;
           border-bottom: 1px solid #f3f4f6;
         }
-
         .cart-item:last-child {
           border-bottom: none;
         }
-
         .item-image {
           width: 50px;
           height: 50px;
@@ -586,47 +492,39 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           margin-right: 12px;
           overflow: hidden;
         }
-
         .item-image img {
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
-
         .item-details {
           flex: 1;
         }
-
         .item-name {
           font-size: 0.9rem;
           font-weight: 600;
           color: #1f2937;
           margin-bottom: 2px;
         }
-
         .item-quantity {
           font-size: 0.8rem;
           color: #6b7280;
         }
-
         .item-price {
           font-size: 0.9rem;
           font-weight: 700;
           color: #059669;
         }
-
         .price-breakdown {
           border-top: 2px solid #f3f4f6;
           padding-top: 20px;
         }
-
         .price-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 12px;
         }
-
         .price-row:last-child {
           margin-bottom: 0;
           padding-top: 12px;
@@ -635,17 +533,14 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           font-size: 1.1rem;
           color: #1f2937;
         }
-
         .price-label {
           color: #6b7280;
           font-size: 0.95rem;
         }
-
         .price-value {
           font-weight: 600;
           color: #1f2937;
         }
-
         .submit-btn {
           width: 100%;
           padding: 12px 16px;
@@ -663,17 +558,14 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           justify-content: center;
           gap: 8px;
         }
-
         .submit-btn:hover {
           background: #e47911;
           border-color: #e47911;
         }
-
         .submit-btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .security-info {
           display: flex;
           align-items: center;
@@ -686,45 +578,36 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
           color: #059669;
           font-size: 0.85rem;
         }
-
         @media (max-width: 1024px) {
           .checkout-content {
             grid-template-columns: 1fr;
           }
-
           .order-summary {
             position: static;
           }
         }
-
         @media (max-width: 768px) {
           .checkout-container {
             padding: 0 16px;
           }
-
           .checkout-form, .order-summary {
             padding: 20px;
           }
-
           .form-grid {
             grid-template-columns: 1fr;
           }
-
           .checkout-header {
             padding: 16px 20px;
           }
-
           .checkout-title {
             font-size: 1.5rem;
           }
-
           .radio-group {
             flex-direction: column;
             gap: 12px;
           }
         }
       `}</style>
-
       <div className="checkout-container">
         <div className="checkout-header">
           <div className="header-content">
@@ -734,21 +617,17 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
             <h1 className="checkout-title">Checkout</h1>
           </div>
         </div>
-
         <div className="main-content">
           <form onSubmit={handleSubmit}>
             <div className="checkout-content">
               <div className="checkout-form">
-                {/* Shipping Address */}
                 <div className="form-section">
                   <h2 className="section-title"><MapPin size={20} /> Shipping Address</h2>
-
                   {loading ? (
                     <p>Loading addresses...</p>
                   ) : addresses.length > 0 ? (
                     <div>
                       <h3>Select Address</h3>
-
                       {addresses.map((addr) => (
                         <div key={addr.id} className="radio-option">
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -762,7 +641,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                             />
                             <span className="radio-label">{addr.addressLine}, {addr.city}, {addr.state} - {addr.zipCode}</span>
                           </div>
-
                           <div style={{ display: "flex", gap: 8 }}>
                             <button
                               type="button"
@@ -772,7 +650,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                             >
                               Edit
                             </button>
-
                             <button
                               type="button"
                               onClick={() => handleDeleteAddress(addr.id)}
@@ -784,8 +661,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                           </div>
                         </div>
                       ))}
-
-                      {/* Add New Address toggle */}
                       <div style={{ marginTop: 12 }}>
                         <button
                           type="button"
@@ -802,8 +677,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                           {showAddForm ? "Cancel" : "Add New Address"}
                         </button>
                       </div>
-
-                      {/* Inline add/edit form */}
                       {showAddForm && (
                         <div style={{ marginTop: 12 }}>
                           <div className="form-grid">
@@ -818,7 +691,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                               />
                               {errors.addressLine && <div className="error-message">{errors.addressLine}</div>}
                             </div>
-
                             <div className="form-group">
                               <label className="form-label">City *</label>
                               <input
@@ -830,7 +702,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                               />
                               {errors.city && <div className="error-message">{errors.city}</div>}
                             </div>
-
                             <div className="form-group">
                               <label className="form-label">State *</label>
                               <input
@@ -843,7 +714,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                               />
                               {errors.state && <div className="error-message">{errors.state}</div>}
                             </div>
-
                             <div className="form-group">
                               <label className="form-label">Zip Code *</label>
                               <input
@@ -855,7 +725,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                               />
                               {errors.zipCode && <div className="error-message">{errors.zipCode}</div>}
                             </div>
-
                             <div className="form-group full-width">
                               <button
                                 type="button"
@@ -871,14 +740,12 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                                     ? "Update Address"
                                     : "Save Address"}
                               </button>
-
                             </div>
                           </div>
                         </div>
                       )}
                     </div>
                   ) : (
-                    // No addresses exist — show add form directly
                     <div>
                       <div className="form-grid">
                         <div className="form-group full-width">
@@ -892,7 +759,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                           />
                           {errors.addressLine && <div className="error-message">{errors.addressLine}</div>}
                         </div>
-
                         <div className="form-group">
                           <label className="form-label">City *</label>
                           <input
@@ -904,7 +770,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                           />
                           {errors.city && <div className="error-message">{errors.city}</div>}
                         </div>
-
                         <div className="form-group">
                           <label className="form-label">State *</label>
                           <input
@@ -916,7 +781,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                           />
                           {errors.state && <div className="error-message">{errors.state}</div>}
                         </div>
-
                         <div className="form-group">
                           <label className="form-label">Zip Code *</label>
                           <input
@@ -928,7 +792,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                           />
                           {errors.zipCode && <div className="error-message">{errors.zipCode}</div>}
                         </div>
-
                         <div className="form-group full-width">
                           <button type="button" onClick={handleAddAddress} className="submit-btn" disabled={isAddingAddress}>
                             {isAddingAddress ? "Adding..." : "Add Address"}
@@ -938,8 +801,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                     </div>
                   )}
                 </div>
-
-                {/* Shipping Method */}
                 <div className="form-section">
                   <h2 className="section-title"><Truck size={20} /> Shipping Method</h2>
                   <div className="radio-group">
@@ -953,8 +814,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                     </label>
                   </div>
                 </div>
-
-                {/* Payment Method */}
                 <div className="form-section">
                   <h2 className="section-title"><CreditCard size={20} /> Payment Method</h2>
                   <div className="radio-group">
@@ -967,7 +826,6 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                       <span className="radio-label">Cash on Delivery</span>
                     </label>
                   </div>
-
                   {formData.paymentMethod === "card" && (
                     <div className="form-grid" style={{ marginTop: "16px" }}>
                       <div className="form-group full-width">
@@ -975,19 +833,16 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                         <input type="text" name="cardNumber" value={formData.cardNumber} onChange={handleCardNumberChange} className={`form-input ${errors.cardNumber ? "error" : ""}`} placeholder="1234 5678 9012 3456" maxLength="19" />
                         {errors.cardNumber && <div className="error-message">{errors.cardNumber}</div>}
                       </div>
-
                       <div className="form-group">
                         <label className="form-label">Expiry Date *</label>
                         <input type="text" name="expiryDate" value={formData.expiryDate} onChange={handleInputChange} className={`form-input ${errors.expiryDate ? "error" : ""}`} placeholder="MM/YY" />
                         {errors.expiryDate && <div className="error-message">{errors.expiryDate}</div>}
                       </div>
-
                       <div className="form-group">
                         <label className="form-label">CVV *</label>
                         <input type="text" name="cvv" value={formData.cvv} onChange={handleInputChange} className={`form-input ${errors.cvv ? "error" : ""}`} placeholder="123" maxLength="3" />
                         {errors.cvv && <div className="error-message">{errors.cvv}</div>}
                       </div>
-
                       <div className="form-group full-width">
                         <label className="form-label">Cardholder Name *</label>
                         <input type="text" name="cardName" value={formData.cardName} onChange={handleInputChange} className={`form-input ${errors.cardName ? "error" : ""}`} placeholder="Name as on card" />
@@ -998,11 +853,8 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                   <div className="security-info"><Shield size={16} /> Your payment information is secure and encrypted</div>
                 </div>
               </div>
-
-              {/* Right Column - Order Summary */}
               <div className="order-summary">
                 <h2 className="summary-title">Order Summary</h2>
-
                 <div className="cart-items">
                   {cartItems.map((item) => (
                     <div key={item.id} className="cart-item">
@@ -1036,5 +888,4 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
     </div>
   );
 };
-
 export default CheckoutPage;
