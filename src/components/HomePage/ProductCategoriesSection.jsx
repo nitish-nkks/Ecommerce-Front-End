@@ -3,7 +3,9 @@ import React from 'react';
 const ProductCategoriesSection = () => {
   const scrollProducts = (containerId, direction) => {
     const container = document.getElementById(containerId);
-    const scrollAmount = 280;
+    const isMobile = window.innerWidth <= 768;
+    const scrollAmount = isMobile ? 180 : 280;
+    
     if (container) {
       container.scrollBy({
         left: direction * scrollAmount,
@@ -84,8 +86,10 @@ const ProductCategoriesSection = () => {
           display: flex;
           gap: 20px;
           overflow-x: auto;
+          overflow-y: hidden;
           scroll-behavior: smooth;
           padding-bottom: 10px;
+          border-radius: 12px;
         }
 
         .product-scroll-wrapper::-webkit-scrollbar {
@@ -206,6 +210,10 @@ const ProductCategoriesSection = () => {
             font-size: 1.4rem;
           }
 
+          .product-scroll-container {
+            padding: 15px;
+          }
+
           .product-card {
             flex: 0 0 200px;
             padding: 12px;
@@ -218,24 +226,36 @@ const ProductCategoriesSection = () => {
           .product-name {
             font-size: 0.8rem;
           }
-
-          .product-nav {
-            width: 35px;
-            height: 35px;
-            font-size: 1rem;
-          }
         }
 
         @media (max-width: 480px) {
+          .product-categories-section {
+            padding: 30px 12px;
+          }
+
           .product-category-image {
             width: 160px;
             height: 180px;
           }
 
+          .product-scroll-container {
+            padding: 12px;
+          }
+
           .product-card {
-            flex: 0 0 180px;
+            flex: 0 0 160px;
+            padding: 10px;
+          }
+
+          .product-image {
+            height: 120px;
+          }
+
+          .product-name {
+            font-size: 0.75rem;
           }
         }
+
       `}</style>
 
       <div className="product-categories-section">

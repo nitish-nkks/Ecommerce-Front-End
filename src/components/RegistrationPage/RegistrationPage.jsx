@@ -81,52 +81,17 @@ const useRegistrationForm = () => {
       isFormValid
     }
   };
-};
 
-// --- Reusable Components ---
-const FormInput = React.memo(({ name, type = 'text', value, onChange, placeholder, icon: Icon, children, ...props }) => (
-  <div style={styles.inputGroup}>
-    {Icon && <Icon style={styles.inputIcon} size={18} />}
-    <input
-      type={type}
-      name={name}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      style={{ ...styles.input, paddingLeft: Icon ? '44px' : '16px' }}
-      {...props}
-    />
-    {children}
-  </div>
-));
-
-const FeatureCard = React.memo(({ icon: Icon, title, description, iconBgColor, iconColor }) => (
-  <div style={styles.featureCard}>
-    <div style={{ ...styles.featureIcon, backgroundColor: iconBgColor }}>
-      <Icon size={20} style={{ color: iconColor }} />
-    </div>
-    <h3 style={styles.featureTitle}>{title}</h3>
-    <p style={styles.featureDescription}>{description}</p>
-  </div>
-));
-
-const StatItem = React.memo(({ value, label, color, style }) => (
-  <div style={{ ...styles.statItem, ...style }}>
-    <div style={{ ...styles.statNumber, color }}>{value}</div>
-    <div style={styles.statLabel}>{label}</div>
-  </div>
-));
-
-
-// --- Main Components ---
-const LeftSide = React.memo(({ onBackToLogin }) => (
-  <div style={styles.leftSide}>
-    <div style={styles.backgroundPattern}>
-      <div style={{ ...styles.bgCircle, top: '40px', left: '40px', width: '80px', height: '80px', backgroundColor: '#059669' }} />
-      <div style={{ ...styles.bgCircle, top: '160px', right: '64px', width: '64px', height: '64px', backgroundColor: '#10b981' }} />
-      <div style={{ ...styles.bgCircle, bottom: '80px', left: '80px', width: '96px', height: '96px', backgroundColor: '#65a30d' }} />
-      <div style={{ ...styles.bgCircle, bottom: '160px', right: '40px', width: '48px', height: '48px', backgroundColor: '#16a34a' }} />
-    </div>
+  return (
+    <div style={styles.container}>
+      {/* Left Side - Brand & Features (kept from your original layout) */}
+      <div style={styles.leftSide}>
+        <div style={styles.backgroundPattern}>
+          <div style={{ ...styles.bgCircle, top: '40px', left: '40px', width: '80px', height: '80px', backgroundColor: '#059669' }} />
+          <div style={{ ...styles.bgCircle, top: '160px', right: '64px', width: '64px', height: '64px', backgroundColor: '#10b981' }} />
+          <div style={{ ...styles.bgCircle, bottom: '80px', left: '80px', width: '96px', height: '96px', backgroundColor: '#65a30d' }} />
+          <div style={{ ...styles.bgCircle, bottom: '160px', right: '40px', width: '48px', height: '48px', backgroundColor: '#16a34a' }} />
+        </div>
 
     <button onClick={onBackToLogin} style={styles.backButton} aria-label="Back to Login">
       <ArrowLeft size={18} />
@@ -146,69 +111,116 @@ const LeftSide = React.memo(({ onBackToLogin }) => (
         <FeatureCard icon={TrendingUp} title="Results" description="Proven growth outcomes" iconBgColor="#dcfce7" iconColor="#059669" />
       </div>
 
-      <div style={styles.statsCard}>
-        <div style={styles.statsGrid}>
-          <StatItem value="50K+" label="Happy Farmers" color="#059669" />
-          <StatItem value="200+" label="Feed Products" color="#10b981" style={{ borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb' }} />
-          <StatItem value="15+" label="Years Experience" color="#65a30d" />
+          <div style={styles.statsCard}>
+            <div style={styles.statsGrid}>
+              <div style={styles.statItem}>
+                <div style={{ ...styles.statNumber, color: '#059669' }}>50K+</div>
+                <div style={styles.statLabel}>Happy Farmers</div>
+              </div>
+              <div style={{ ...styles.statItem, borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb' }}>
+                <div style={{ ...styles.statNumber, color: '#10b981' }}>200+</div>
+                <div style={styles.statLabel}>Feed Products</div>
+              </div>
+              <div style={styles.statItem}>
+                <div style={{ ...styles.statNumber, color: '#65a30d' }}>15+</div>
+                <div style={styles.statLabel}>Years Experience</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-));
 
-const RegistrationForm = ({ onBackToLogin }) => {
-  const { formData, status, handleInputChange, handleSubmit, validity } = useRegistrationForm();
-  const [showPassword, setShowPassword] = useState(false);
-
-  return (
-    <div style={styles.rightSide}>
-      <div style={styles.formContainer}>
-        <div style={styles.formHeader}>
-          <h2 style={styles.formTitle}>Create Account</h2>
-          <p style={styles.formSubtitle}>Fill in your details to get started</p>
-        </div>
-
-        <form style={styles.formContent} onSubmit={handleSubmit} noValidate>
-          <div style={styles.inputGroup}>
-            <span style={styles.countryCodeDisplay}>IN +91</span>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="12345 67890"
-              value={formData.phone}
-              onChange={handleInputChange}
-              style={{ ...styles.input, paddingLeft: '70px' }}
-              aria-label="phone"
-              required
-              autoFocus
-            />
-          </div>
-          <FormInput name="firstName" placeholder="First name" value={formData.firstName} onChange={handleInputChange} icon={User} required />
-          <FormInput name="lastName" placeholder="Last name" value={formData.lastName} onChange={handleInputChange} icon={User} required />
-          <FormInput name="email" type="email" placeholder="Email (must end with @gmail.com)" value={formData.email} onChange={handleInputChange} icon={Mail} required />
-
-          <div style={styles.inputGroup}>
-            <Lock style={styles.inputIcon} size={18} />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              placeholder="Password (min 6 characters)"
-              value={formData.password}
-              onChange={handleInputChange}
-              style={{ ...styles.input, paddingLeft: '44px', paddingRight: '48px' }}
-              minLength={MIN_PASSWORD_LENGTH}
-              required
-            />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.passwordToggle} aria-label={showPassword ? "Hide password" : "Show password"}>
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+      {/* Right Side - Registration Form */}
+      <div style={styles.rightSide}>
+        <div style={styles.formContainer}>
+          <div style={styles.formHeader}>
+            <h2 style={styles.formTitle}>Create Account</h2>
+            <p style={styles.formSubtitle}>Fill in your details to get started</p>
           </div>
 
-          <div aria-live="polite">
-            {status.successMessage && <div style={{ color: 'green', padding: '8px 12px', borderRadius: 6 }}>{status.successMessage}</div>}
-            {status.errorMessage && <div style={{ color: 'red', padding: '8px 12px', borderRadius: 6 }}>{status.errorMessage}</div>}
-          </div>
+          <form style={styles.formContent} onSubmit={handleSubmit}>
+            {/* Phone input (auto-normalized) */}
+            <div style={styles.inputGroup}>
+              <span style={styles.countryCodeDisplay}>IN +91</span>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="12345 67890"
+                value={formData.phone}
+                onChange={handleInputChange}
+                style={{ ...styles.input, paddingLeft: '70px' }} /* Adjusted paddingLeft */
+                aria-label="phone"
+              />
+              <div style={{ fontSize: 12, color: formData.phone && !isPhoneValid(formData.phone) ? 'red' : '#6b7280', marginTop: 6 }}>
+                {formData.phone ? (isPhoneValid(formData.phone) ? 'Phone looks good' : 'Enter 10 digits') : 'Enter your 10-digit mobile number'}
+              </div>
+            </div>
+
+            {/* First Name */}
+            <div style={styles.inputGroup}>
+              <User style={styles.inputIcon} size={18} />
+              <input
+                type="text"
+                name="firstName"
+                placeholder="First name"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                style={{ ...styles.input, paddingLeft: '44px' }}
+                required
+              />
+            </div>
+
+            {/* Last Name */}
+            <div style={styles.inputGroup}>
+              <User style={styles.inputIcon} size={18} />
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Last name"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                style={{ ...styles.input, paddingLeft: '44px' }}
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div style={styles.inputGroup}>
+              <Mail style={styles.inputIcon} size={18} />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email (must end with @gmail.com)"
+                value={formData.email}
+                onChange={handleInputChange}
+                style={{ ...styles.input, paddingLeft: '44px' }}
+                required
+              />
+              <div style={{ fontSize: 12, color: formData.email && !isEmailValid(formData.email) ? 'red' : '#6b7280', marginTop: 6 }}>
+                {formData.email ? (isEmailValid(formData.email) ? 'Gmail address OK' : 'Email must be a Gmail address (@gmail.com)') : null}
+              </div>
+            </div>
+
+            {/* Password */}
+            <div style={styles.inputGroup}>
+              <Lock style={styles.inputIcon} size={18} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                placeholder="Password (min 6 characters)"
+                value={formData.password}
+                onChange={handleInputChange}
+                style={{ ...styles.input, paddingLeft: '44px', paddingRight: '48px' }}
+                minLength={6}
+                required
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+              <div style={{ fontSize: 12, color: formData.password && !isPasswordValid(formData.password) ? 'red' : '#6b7280', marginTop: 6 }}>
+                {formData.password ? (isPasswordValid(formData.password) ? 'Password OK' : 'At least 6 characters') : null}
+              </div>
+            </div>
 
           <button
             type="submit"
@@ -233,6 +245,7 @@ const RegistrationForm = ({ onBackToLogin }) => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 
@@ -441,13 +454,34 @@ const styles = {
     cursor: 'pointer',
     zIndex: 2
   },
+  phoneInputContainer: {
+    position: 'relative',
+    width: '100%',
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    background: '#f9fafb',
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'all 0.3s ease'
+  },
   countryCodeDisplay: {
     position: 'absolute',
-    left: '12px',
+    left: '16px',
     top: '50%',
     transform: 'translateY(-50%)',
-    color: '#6b7280',
+    color: '#4b5563',
     fontWeight: '600',
+    fontSize: '0.875rem',
+    zIndex: 2,
+    pointerEvents: 'none',
+    minWidth: '50px'
+  },
+  phoneSeparator: {
+    position: 'absolute',
+    left: '72px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#d1d5db',
     fontSize: '0.875rem',
     zIndex: 2,
     pointerEvents: 'none'
@@ -595,43 +629,6 @@ styleSheet.innerText = `
     text-decoration: underline !important;
   }
   
-  @media (max-width: 1024px) {
-    .container {
-      flex-direction: column !important;
-    }
-    
-    .left-side,
-    .right-side {
-      width: 100% !important;
-    }
-    
-    .left-side {
-      min-height: 40vh !important;
-    }
-    
-    .right-side {
-      min-height: 60vh !important;
-    }
-  }
-  
-  @media (max-width: 768px) {.form-container {
-      padding: 24px 20px !important;
-    }
-    
-    .input-row {
-      flex-direction: column !important;
-      gap: 0 !important;
-    }
-    
-    .brand-logo {
-      width: 96px !important;
-      height: 96px !important;
-    }
-    
-    .brand-title {
-      font-size: 1.5rem !important;
-    }
-  }
 `;
 document.head.appendChild(styleSheet);
 

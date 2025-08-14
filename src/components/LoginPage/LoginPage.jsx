@@ -1074,46 +1074,50 @@ const Login = ({ onBackToHome, onSwitchToRegister, onLoginSuccess }) => {
           }
         }
 
+        @media (max-width: 768px) {
+          .login-container {
+            flex-direction: column;
+          }
+
+          .left-section {
+            display: none;
+          }
+
+          .right-section {
+            width: 100%;
+            min-width: auto;
+            min-height: 100vh;
+          }
+
+          .login-form-container {
+            max-width: 100%;
+            padding: 20px;
+          }
+        }
+
         @media (max-width: 480px) {
-          .logo-main {
-            width: 100px;
-            height: 100px;
+          .login-container {
+            min-height: 100vh;
           }
 
-          .logo-badge {
-            width: 24px;
-            height: 24px;
-            font-size: 10px;
-          }
-
-          .welcome-text h1 {
-            font-size: 1.5rem;
-          }
-
-          .feed-icons {
-            gap: 12px;
-          }
-
-          .feed-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 16px;
-          }
-          
-          .trust-indicators {
-            gap: 8px;
-          }
-          
-          .trust-item {
-            padding: 4px 8px;
-          }
-          
-          .trust-item span {
-            font-size: 0.7rem;
+          .right-section {
+            min-height: 100vh;
+            padding: 20px 0;
           }
           
           .login-form-container {
             padding: 16px 12px;
+            margin-bottom: 0;
+          }
+
+          .login-header {
+            margin-bottom: 20px;
+          }
+
+          .login-logo {
+            width: 250px;
+            height: 150px;
+            margin-top: -50px;
           }
 
           .modal-content {
