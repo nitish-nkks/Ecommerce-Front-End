@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Phone, User, Lock, Eye, EyeOff, ArrowLeft, Wheat, Users, Award, TrendingUp, Mail
 } from 'lucide-react';
 import { registerCustomer } from '../../api/api';
 
-const Registration = ({ onBackToLogin }) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+const MIN_PASSWORD_LENGTH = 6;
+const PHONE_DIGITS = 10;
 
+const useRegistrationForm = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -17,61 +15,36 @@ const Registration = ({ onBackToLogin }) => {
     password: '',
     phone: ''
   });
+  const [status, setStatus] = useState({
+    isLoading: false,
+    successMessage: '',
+    errorMessage: ''
+  });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-
     if (name === 'phone') {
-      const digitsOnly = value.replace(/\D/g, '');
-      const local = digitsOnly.slice(0, 10);
-
-      setFormData((prev) => ({ ...prev, phone: local }));
-      return;
+      const digitsOnly = value.replace(/\D/g, '').slice(0, PHONE_DIGITS);
+      setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  }, []);
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const isEmailValid = useMemo(() => /^[^@\s]+@gmail\.com$/i.test(formData.email.trim()), [formData.email]);
+  const isPhoneValid = useMemo(() => /^\d{10}$/.test(formData.phone), [formData.phone]);
+  const isPasswordValid = useMemo(() => formData.password.length >= MIN_PASSWORD_LENGTH, [formData.password]);
+  const isNameValid = useMemo(() => formData.firstName.trim() && formData.lastName.trim(), [formData.firstName, formData.lastName]);
 
-  const isEmailValid = (email) => {
-    if (!email) return false;
-    return /^[^@\s]+@gmail\.com$/i.test(email.trim());
-  };
-
-  const isPhoneValid = (phoneLocal) => {
-    return /^\d{10}$/.test(phoneLocal);
-  };
-
-  const isPasswordValid = (pw) => pw && pw.length >= 6;
+  const isFormValid = isNameValid && isEmailValid && isPhoneValid && isPasswordValid;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (!isFormValid || status.isLoading) return;
 
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      setErrorMessage('Please provide first name and last name.');
-      return;
-    }
-
-    if (!isEmailValid(formData.email)) {
-      setErrorMessage('Please enter a valid Gmail address (must end with @gmail.com).');
-      return;
-    }
-
-    if (!isPasswordValid(formData.password)) {
-      setErrorMessage('Password must be at least 6 characters.');
-      return;
-    }
-
-    if (!isPhoneValid(formData.phone)) {
-      setErrorMessage('Please enter a valid 10-digit phone number (we will send it as +91XXXXXXXXXX).');
-      return;
-    }
+    setStatus({ isLoading: true, successMessage: '', errorMessage: '' });
 
     const payload = {
-      
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
@@ -80,229 +53,199 @@ const Registration = ({ onBackToLogin }) => {
     };
 
     try {
-      setIsLoading(true);
       const res = await registerCustomer(payload);
       const data = res?.data ?? res;
 
       if ((res?.status >= 200 && res?.status < 300) || data?.success) {
-        setSuccessMessage('Account created successfully!');
+        setStatus({ isLoading: false, successMessage: 'Account created successfully!', errorMessage: '' });
         setFormData({ firstName: '', lastName: '', email: '', password: '', phone: '' });
-        setErrorMessage('');
       } else {
-        const msg = data?.message || data?.error || 'Registration failed';
-        setErrorMessage(msg);
+        setStatus({ isLoading: false, successMessage: '', errorMessage: data?.message || 'Registration failed' });
       }
     } catch (err) {
-      console.error('registerCustomer error:', err);
-      const serverMsg = err?.response?.data?.message || err?.response?.data || err?.message || 'Server error';
-      setErrorMessage(serverMsg);
-    } finally {
-      setIsLoading(false);
+      const serverMsg = err?.response?.data?.message || err?.message || 'An unexpected server error occurred.';
+      setStatus({ isLoading: false, successMessage: '', errorMessage: serverMsg });
+      console.error('Registration Error:', err);
     }
   };
 
-  return (
-    <div style={styles.container}>
-      {/* Left Side - Brand & Features (kept from your original layout) */}
-      <div style={styles.leftSide}>
-        <div style={styles.backgroundPattern}>
-          <div style={{ ...styles.bgCircle, top: '40px', left: '40px', width: '80px', height: '80px', backgroundColor: '#059669' }} />
-          <div style={{ ...styles.bgCircle, top: '160px', right: '64px', width: '64px', height: '64px', backgroundColor: '#10b981' }} />
-          <div style={{ ...styles.bgCircle, bottom: '80px', left: '80px', width: '96px', height: '96px', backgroundColor: '#65a30d' }} />
-          <div style={{ ...styles.bgCircle, bottom: '160px', right: '40px', width: '48px', height: '48px', backgroundColor: '#16a34a' }} />
-        </div>
+  return {
+    formData,
+    status,
+    handleInputChange,
+    handleSubmit,
+    validity: {
+      isEmailValid,
+      isPhoneValid,
+      isPasswordValid,
+      isFormValid
+    }
+  };
+};
 
-        <button onClick={onBackToLogin} style={styles.backButton}>
-          <ArrowLeft size={18} />
-        </button>
+// --- Reusable Components ---
+const FormInput = React.memo(({ name, type = 'text', value, onChange, placeholder, icon: Icon, children, ...props }) => (
+  <div style={styles.inputGroup}>
+    {Icon && <Icon style={styles.inputIcon} size={18} />}
+    <input
+      type={type}
+      name={name}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      style={{ ...styles.input, paddingLeft: Icon ? '44px' : '16px' }}
+      {...props}
+    />
+    {children}
+  </div>
+));
 
-        <div style={styles.brandSection}>
-          <div style={styles.brandLogo}><Wheat size={48} style={{ color: 'white' }} /></div>
-          <div style={styles.brandText}>
-            <h1 style={styles.brandTitle}>Join <span style={styles.brandName}>Feedora</span></h1>
-            <p style={styles.brandSubtitle}>Premium livestock nutrition solutions for healthier animals and better yields</p>
-          </div>
+const FeatureCard = React.memo(({ icon: Icon, title, description, iconBgColor, iconColor }) => (
+  <div style={styles.featureCard}>
+    <div style={{ ...styles.featureIcon, backgroundColor: iconBgColor }}>
+      <Icon size={20} style={{ color: iconColor }} />
+    </div>
+    <h3 style={styles.featureTitle}>{title}</h3>
+    <p style={styles.featureDescription}>{description}</p>
+  </div>
+));
 
-          <div style={styles.featuresGrid}>
-            <div style={styles.featureCard}>
-              <div style={{ ...styles.featureIcon, backgroundColor: '#dcfce7' }}>
-                <Wheat size={20} style={{ color: '#059669' }} />
-              </div>
-              <h3 style={styles.featureTitle}>Quality Feed</h3>
-              <p style={styles.featureDescription}>Premium nutrition for all livestock</p>
-            </div>
+const StatItem = React.memo(({ value, label, color, style }) => (
+  <div style={{ ...styles.statItem, ...style }}>
+    <div style={{ ...styles.statNumber, color }}>{value}</div>
+    <div style={styles.statLabel}>{label}</div>
+  </div>
+));
 
-            <div style={styles.featureCard}>
-              <div style={{ ...styles.featureIcon, backgroundColor: '#d1fae5' }}>
-                <Users size={20} style={{ color: '#10b981' }} />
-              </div>
-              <h3 style={styles.featureTitle}>Expert Support</h3>
-              <p style={styles.featureDescription}>24/7 veterinary guidance</p>
-            </div>
 
-            <div style={styles.featureCard}>
-              <div style={{ ...styles.featureIcon, backgroundColor: '#ecfccb' }}>
-                <Award size={20} style={{ color: '#65a30d' }} />
-              </div>
-              <h3 style={styles.featureTitle}>Certified</h3>
-              <p style={styles.featureDescription}>ISO certified products</p>
-            </div>
+// --- Main Components ---
+const LeftSide = React.memo(({ onBackToLogin }) => (
+  <div style={styles.leftSide}>
+    <div style={styles.backgroundPattern}>
+      <div style={{ ...styles.bgCircle, top: '40px', left: '40px', width: '80px', height: '80px', backgroundColor: '#059669' }} />
+      <div style={{ ...styles.bgCircle, top: '160px', right: '64px', width: '64px', height: '64px', backgroundColor: '#10b981' }} />
+      <div style={{ ...styles.bgCircle, bottom: '80px', left: '80px', width: '96px', height: '96px', backgroundColor: '#65a30d' }} />
+      <div style={{ ...styles.bgCircle, bottom: '160px', right: '40px', width: '48px', height: '48px', backgroundColor: '#16a34a' }} />
+    </div>
 
-            <div style={styles.featureCard}>
-              <div style={{ ...styles.featureIcon, backgroundColor: '#dcfce7' }}>
-                <TrendingUp size={20} style={{ color: '#059669' }} />
-              </div>
-              <h3 style={styles.featureTitle}>Results</h3>
-              <p style={styles.featureDescription}>Proven growth outcomes</p>
-            </div>
-          </div>
+    <button onClick={onBackToLogin} style={styles.backButton} aria-label="Back to Login">
+      <ArrowLeft size={18} />
+    </button>
 
-          <div style={styles.statsCard}>
-            <div style={styles.statsGrid}>
-              <div style={styles.statItem}>
-                <div style={{ ...styles.statNumber, color: '#059669' }}>50K+</div>
-                <div style={styles.statLabel}>Happy Farmers</div>
-              </div>
-              <div style={{ ...styles.statItem, borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb' }}>
-                <div style={{ ...styles.statNumber, color: '#10b981' }}>200+</div>
-                <div style={styles.statLabel}>Feed Products</div>
-              </div>
-              <div style={styles.statItem}>
-                <div style={{ ...styles.statNumber, color: '#65a30d' }}>15+</div>
-                <div style={styles.statLabel}>Years Experience</div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div style={styles.brandSection}>
+      <div style={styles.brandLogo}><Wheat size={48} style={{ color: 'white' }} /></div>
+      <div style={styles.brandText}>
+        <h1 style={styles.brandTitle}>Join <span style={styles.brandName}>Feedora</span></h1>
+        <p style={styles.brandSubtitle}>Premium livestock nutrition solutions for healthier animals and better yields</p>
       </div>
 
-      {/* Right Side - Registration Form */}
-      <div style={styles.rightSide}>
-        <div style={styles.formContainer}>
-          <div style={styles.formHeader}>
-            <h2 style={styles.formTitle}>Create Account</h2>
-            <p style={styles.formSubtitle}>Fill in your details to get started</p>
+      <div style={styles.featuresGrid}>
+        <FeatureCard icon={Wheat} title="Quality Feed" description="Premium nutrition for all livestock" iconBgColor="#dcfce7" iconColor="#059669" />
+        <FeatureCard icon={Users} title="Expert Support" description="24/7 veterinary guidance" iconBgColor="#d1fae5" iconColor="#10b981" />
+        <FeatureCard icon={Award} title="Certified" description="ISO certified products" iconBgColor="#ecfccb" iconColor="#65a30d" />
+        <FeatureCard icon={TrendingUp} title="Results" description="Proven growth outcomes" iconBgColor="#dcfce7" iconColor="#059669" />
+      </div>
+
+      <div style={styles.statsCard}>
+        <div style={styles.statsGrid}>
+          <StatItem value="50K+" label="Happy Farmers" color="#059669" />
+          <StatItem value="200+" label="Feed Products" color="#10b981" style={{ borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb' }} />
+          <StatItem value="15+" label="Years Experience" color="#65a30d" />
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+const RegistrationForm = ({ onBackToLogin }) => {
+  const { formData, status, handleInputChange, handleSubmit, validity } = useRegistrationForm();
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div style={styles.rightSide}>
+      <div style={styles.formContainer}>
+        <div style={styles.formHeader}>
+          <h2 style={styles.formTitle}>Create Account</h2>
+          <p style={styles.formSubtitle}>Fill in your details to get started</p>
+        </div>
+
+        <form style={styles.formContent} onSubmit={handleSubmit} noValidate>
+          <div style={styles.inputGroup}>
+            <span style={styles.countryCodeDisplay}>IN +91</span>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="12345 67890"
+              value={formData.phone}
+              onChange={handleInputChange}
+              style={{ ...styles.input, paddingLeft: '70px' }}
+              aria-label="phone"
+              required
+              autoFocus
+            />
+          </div>
+          <FormInput name="firstName" placeholder="First name" value={formData.firstName} onChange={handleInputChange} icon={User} required />
+          <FormInput name="lastName" placeholder="Last name" value={formData.lastName} onChange={handleInputChange} icon={User} required />
+          <FormInput name="email" type="email" placeholder="Email (must end with @gmail.com)" value={formData.email} onChange={handleInputChange} icon={Mail} required />
+
+          <div style={styles.inputGroup}>
+            <Lock style={styles.inputIcon} size={18} />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password (min 6 characters)"
+              value={formData.password}
+              onChange={handleInputChange}
+              style={{ ...styles.input, paddingLeft: '44px', paddingRight: '48px' }}
+              minLength={MIN_PASSWORD_LENGTH}
+              required
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.passwordToggle} aria-label={showPassword ? "Hide password" : "Show password"}>
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
-          <form style={styles.formContent} onSubmit={handleSubmit}>
-            {/* Phone input (auto-normalized) */}
-            <div style={styles.inputGroup}>
-              <span style={styles.countryCodeDisplay}>IN +91</span>
-              <input
-                type="tel"
-                name="phone"
-                placeholder="12345 67890"
-                value={formData.phone}
-                onChange={handleInputChange}
-                style={{ ...styles.input, paddingLeft: '70px' }} /* Adjusted paddingLeft */
-                aria-label="phone"
-              />
-              <div style={{ fontSize: 12, color: formData.phone && !isPhoneValid(formData.phone) ? 'red' : '#6b7280', marginTop: 6 }}>
-                {formData.phone ? (isPhoneValid(formData.phone) ? 'Phone looks good' : 'Enter 10 digits') : 'Enter your 10-digit mobile number'}
-              </div>
-            </div>
+          <div aria-live="polite">
+            {status.successMessage && <div style={{ color: 'green', padding: '8px 12px', borderRadius: 6 }}>{status.successMessage}</div>}
+            {status.errorMessage && <div style={{ color: 'red', padding: '8px 12px', borderRadius: 6 }}>{status.errorMessage}</div>}
+          </div>
 
-            {/* First Name */}
-            <div style={styles.inputGroup}>
-              <User style={styles.inputIcon} size={18} />
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First name"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                style={{ ...styles.input, paddingLeft: '44px' }}
-                required
-              />
-            </div>
+          <button
+            type="submit"
+            style={{
+              ...styles.submitButton,
+              opacity: !validity.isFormValid || status.isLoading ? 0.6 : 1,
+              cursor: !validity.isFormValid || status.isLoading ? 'not-allowed' : 'pointer'
+            }}
+            disabled={!validity.isFormValid || status.isLoading}
+          >
+            {status.isLoading ? 'Creating account...' : 'Create Account'}
+          </button>
 
-            {/* Last Name */}
-            <div style={styles.inputGroup}>
-              <User style={styles.inputIcon} size={18} />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last name"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                style={{ ...styles.input, paddingLeft: '44px' }}
-                required
-              />
-            </div>
+          <div style={styles.verificationNote}>
+            <p style={styles.verificationText}>We'll send you a verification code via SMS if required. Message rates may apply.</p>
+          </div>
 
-            {/* Email */}
-            <div style={styles.inputGroup}>
-              <Mail style={styles.inputIcon} size={18} />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email (must end with @gmail.com)"
-                value={formData.email}
-                onChange={handleInputChange}
-                style={{ ...styles.input, paddingLeft: '44px' }}
-                required
-              />
-              <div style={{ fontSize: 12, color: formData.email && !isEmailValid(formData.email) ? 'red' : '#6b7280', marginTop: 6 }}>
-                {formData.email ? (isEmailValid(formData.email) ? 'Gmail address OK' : 'Email must be a Gmail address (@gmail.com)') : null}
-              </div>
-            </div>
-
-            {/* Password */}
-            <div style={styles.inputGroup}>
-              <Lock style={styles.inputIcon} size={18} />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                placeholder="Password (min 6 characters)"
-                value={formData.password}
-                onChange={handleInputChange}
-                style={{ ...styles.input, paddingLeft: '44px', paddingRight: '48px' }}
-                minLength={6}
-                required
-              />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-              <div style={{ fontSize: 12, color: formData.password && !isPasswordValid(formData.password) ? 'red' : '#6b7280', marginTop: 6 }}>
-                {formData.password ? (isPasswordValid(formData.password) ? 'Password OK' : 'At least 6 characters') : null}
-              </div>
-            </div>
-
-            {/* feedback */}
-            {successMessage && <div style={{ color: 'green', padding: '8px 12px', borderRadius: 6 }}>{successMessage}</div>}
-            {errorMessage && <div style={{ color: 'red', padding: '8px 12px', borderRadius: 6 }}>{errorMessage}</div>}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              style={{
-                ...styles.submitButton,
-                opacity: (!formData.firstName || !formData.lastName || !isEmailValid(formData.email) || !isPasswordValid(formData.password) || !isPhoneValid(formData.phone) || isLoading) ? 0.6 : 1,
-                cursor: (!formData.firstName || !formData.lastName || !isEmailValid(formData.email) || !isPasswordValid(formData.password) || !isPhoneValid(formData.phone) || isLoading) ? 'not-allowed' : 'pointer'
-              }}
-              disabled={!formData.firstName || !formData.lastName || !isEmailValid(formData.email) || !isPasswordValid(formData.password) || !isPhoneValid(formData.phone) || isLoading}
-            >
-              {isLoading ? 'Creating account...' : 'Create Account'}
-            </button>
-
-            <div style={styles.verificationNote}>
-              <p style={styles.verificationText}>We'll send you a verification code via SMS if required. Message rates may apply.</p>
-            </div>
-
-            <div style={styles.loginLink}>
-              <p style={styles.loginText}>Already a customer?</p>
-              <button type="button" onClick={onBackToLogin} style={styles.loginButton}>Sign in instead</button>
-            </div>
-          </form>
-        </div>
+          <div style={styles.loginLink}>
+            <p style={styles.loginText}>Already a customer?</p>
+            <button type="button" onClick={onBackToLogin} style={styles.loginButton}>Sign in instead</button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
+const Registration = ({ onBackToLogin }) => (
+  <div style={styles.container}>
+    <LeftSide onBackToLogin={onBackToLogin} />
+    <RegistrationForm onBackToLogin={onBackToLogin} />
+  </div>
+);
+
 const styles = {
   container: {
-    minHeight: '80vh',
+    minHeight: '100vh',
     display: 'flex',
     background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
@@ -480,7 +423,7 @@ const styles = {
     position: 'absolute',
     left: '12px',
     top: '50%',
-    transform: 'translateY(-50%)', 
+    transform: 'translateY(-50%)',
     color: '#9ca3af',
     transition: 'color 0.3s ease',
     zIndex: 2
@@ -616,7 +559,7 @@ const styles = {
   }
 };
 
-// Add CSS animations
+
 const styleSheet = document.createElement('style');
 styleSheet.type = 'text/css';
 styleSheet.innerText = `
