@@ -573,20 +573,172 @@ const SearchResultsPage = ({
             display: none;
           }
 
-          .mobile-filters {
-            display: block;
+          .search-results-container {
+            padding: 15px;
+          }
+
+          .search-header {
+            padding: 20px;
+            margin-bottom: 20px;
+          }
+
+          .search-title {
+            font-size: 1.5rem;
+          }
+
+          .search-subtitle {
+            font-size: 1rem;
           }
         }
 
         @media (max-width: 768px) {
+          .search-results-container {
+            padding: 10px;
+          }
+
+          .search-header {
+            padding: 15px;
+            margin-bottom: 15px;
+          }
+
+          .search-title {
+            font-size: 1.3rem;
+          }
+
           .results-grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 16px;
           }
 
           .search-controls {
             flex-direction: column;
             align-items: stretch;
+            gap: 10px;
+          }
+
+          .results-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+          }
+
+          .filter-toggle {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .sort-select {
+            width: 100%;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .search-results-container {
+            padding: 8px;
+          }
+
+          .search-header {
+            padding: 12px;
+            text-align: center;
+          }
+
+          .search-title {
+            font-size: 1.2rem;
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .search-subtitle {
+            font-size: 0.9rem;
+          }
+
+          .results-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          .product-card {
+            border-radius: 12px;
+          }
+
+          .product-content {
+            padding: 15px;
+          }
+
+          .product-name {
+            font-size: 1rem;
+          }
+
+          .product-buttons {
+            margin-top: 8px;
+          }
+
+          .cart-btn {
+            padding: 8px 10px;
+            font-size: 0.75rem;
+          }
+
+          .quantity-selector {
+            padding: 2px;
+          }
+
+          .quantity-btn {
+            width: 28px;
+            height: 28px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .search-results-container {
+            padding: 5px;
+          }
+
+          .search-header {
+            padding: 10px;
+          }
+
+          .search-title {
+            font-size: 1.1rem;
+          }
+
+          .results-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+
+          .product-card {
+            border-radius: 8px;
+          }
+
+          .product-image {
+            height: 180px;
+          }
+
+          .product-content {
+            padding: 12px;
+          }
+
+          .current-price {
+            font-size: 1.1rem;
+          }
+
+          .original-price {
+            font-size: 0.8rem;
+          }
+
+          .cart-btn {
+            padding: 6px 8px;
+            font-size: 0.7rem;
+          }
+
+          .quantity-btn {
+            width: 24px;
+            height: 24px;
+          }
+
+          .quantity-display {
+            padding: 2px 6px;
+            font-size: 0.9rem;
           }
         }
       `}</style>
@@ -791,7 +943,100 @@ const SearchResultsPage = ({
               <X size={24} />
             </button>
           </div>
-          {/* Mobile filter content would go here */}
+          <div style={{ padding: '20px' }}>
+            <div className="filter-group">
+              <label className="filter-label">Category</label>
+              <select
+                className="filter-select"
+                value={filters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Brand</label>
+              <select
+                className="filter-select"
+                value={filters.brand}
+                onChange={(e) => handleFilterChange('brand', e.target.value)}
+              >
+                <option value="">All Brands</option>
+                {brands.map(brand => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Price Range</label>
+              <div className="price-inputs">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  className="filter-input"
+                  value={filters.minPrice}
+                  onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Max"
+                  className="filter-input"
+                  value={filters.maxPrice}
+                  onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Sort By</label>
+              <select
+                className="filter-select"
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+              >
+                <option value="relevance">Most Relevant</option>
+                <option value="name">Name A-Z</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="discount">Highest Discount</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <button 
+                onClick={clearFilters}
+                style={{ 
+                  flex: 1, 
+                  padding: '12px', 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: '8px', 
+                  background: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                Clear All
+              </button>
+              <button 
+                onClick={() => setShowFilters(false)}
+                style={{ 
+                  flex: 1, 
+                  padding: '12px', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  background: '#12b431',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -40,11 +40,39 @@ function App() {
   const [lastOrderData, setLastOrderData] = useState(null);
   const [trackingData, setTrackingData] = useState(null);
   const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSplashScreen, setShowSplashScreen] = useState(false);
 
   useEffect(() => {
     const guestId = localStorage.getItem('guestId');
     if (!guestId) {
       localStorage.setItem('guestId', uuidv4());
+    }
+  }, []);
+
+  // Mobile splash screen effect
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const isMobileWidth = window.innerWidth <= 768;
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      return isMobileWidth || isMobileDevice;
+    };
+    
+    console.log('Window width:', window.innerWidth);
+    console.log('User agent:', navigator.userAgent);
+    console.log('Is mobile device:', checkIfMobile());
+    
+    // Only show splash screen on mobile devices
+    if (checkIfMobile()) {
+      setShowSplashScreen(true);
+      const timer = setTimeout(() => {
+        console.log('Hiding splash screen');
+        setShowSplashScreen(false);
+      }, 2500);
+      
+      return () => clearTimeout(timer);
+    } else {
+      console.log('Desktop device detected, no splash screen');
     }
   }, []);
 
@@ -71,6 +99,10 @@ function App() {
         view = 'order-tracking';
       } else if (path.startsWith('/search')) {
         view = 'search';
+        // Update search query from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSearchQuery = urlParams.get('q') || '';
+        setSearchQuery(urlSearchQuery);
       } else if (path === '/' || path === '') {
         view = 'home';
       }
@@ -127,9 +159,10 @@ function App() {
     updateURL('wishlist');
   };
 
-  const handleSearchSubmit = (searchQuery) => {
+  const handleSearchSubmit = (query) => {
+    setSearchQuery(query);
     setCurrentView('search');
-    const url = searchQuery ? `/search?q=${encodeURIComponent(searchQuery)}` : '/search';
+    const url = query ? `/search?q=${encodeURIComponent(query)}` : '/search';
     window.history.pushState(null, '', url);
   };
 
@@ -378,8 +411,6 @@ function App() {
           />
         );
       case 'search':
-        const urlParams = new URLSearchParams(window.location.search);
-        const searchQuery = urlParams.get('q') || '';
         return (
           <SearchResultsPage
             searchQuery={searchQuery}
@@ -417,6 +448,76 @@ function App() {
 
   return (
     <div className="App">
+      <style>{`
+        body, html {
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+        
+        .App {
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+        
+        * {
+          box-sizing: border-box;
+        }
+        
+        .splash-screen {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          opacity: 1;
+          visibility: visible;
+        }
+        
+        .splash-logo {
+          width: 300px;
+          height: auto;
+          animation: logoScale 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes logoScale {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.1); }
+        }
+        
+        
+        @media (max-width: 768px) {
+          .splash-logo {
+            width: 250px;
+          }
+        }
+      `}</style>
+
+      {/* Mobile Splash Screen */}
+      {showSplashScreen && (
+        <div className="splash-screen">
+          <div style={{ textAlign: 'center' }}>
+            <img 
+              src="/src/assets/brand-logo.png" 
+              alt="Brand Logo" 
+              className="splash-logo"
+              onLoad={() => console.log('Logo loaded successfully')}
+              onError={(e) => {
+                console.log('Logo failed to load, showing text fallback');
+                e.target.style.display = 'none';
+                // Show text fallback only when logo fails
+                e.target.parentNode.innerHTML = '<div style="color: #12b431; font-size: 2.5rem; font-weight: bold; text-align: center;">FEEDORA</div><div style="color: #666; font-size: 1rem; margin-top: 10px; text-align: center;">Loading...</div>';
+              }}
+              style={{ maxWidth: '300px', height: 'auto' }}
+            />
+          </div>
+        </div>
+      )}
+
       {showHeader && (
         <Header 
           onLoginClick={handleLoginClick}

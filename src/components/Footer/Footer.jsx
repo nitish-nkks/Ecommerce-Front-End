@@ -249,20 +249,29 @@ function Footer({ onNavigate }) {
             color: #12b431;
           }
 
+          /* Mobile Responsive Styles */
           @media (max-width: 968px) {
             .feedora-footer-content {
-              grid-template-columns: 1fr 1fr 1fr;
-              gap: 25px;
+              grid-template-columns: 1fr 1fr;
+              gap: 20px;
             }
-            
+
             .feedora-company-section {
               grid-column: 1 / -1;
+              order: -1;
+            }
+
+            .feedora-brand-logo {
+              height: 180px;
+              margin-bottom: -60px;
+              margin-top: -60px;
+              margin-left: -140px;
             }
           }
 
           @media (max-width: 768px) {
             .feedora-footer {
-              padding: 30px 15px 15px;
+              padding: 30px 16px 16px;
             }
 
             .feedora-footer-content {
@@ -270,17 +279,43 @@ function Footer({ onNavigate }) {
               gap: 20px;
             }
 
+            .feedora-company-section {
+              grid-column: 1 / -1;
+              text-align: center;
+              order: -1;
+            }
+
+            .feedora-brand-logo {
+              height: 160px;
+              margin: 0 auto 30px;
+            }
+
+            .feedora-company-info {
+              max-width: 100%;
+              margin: 0 auto;
+            }
+
+            .feedora-newsletter-form {
+              max-width: 100%;
+              margin: 20px auto 0;
+            }
+
             .feedora-newsletter-input {
-              flex-direction: column;
+              max-width: 100%;
             }
 
-            .feedora-newsletter-input input {
-              border-radius: 4px;
-              margin-bottom: 8px;
+            .feedora-social-links {
+              justify-content: center;
             }
 
-            .feedora-newsletter-btn {
-              border-radius: 4px;
+            .feedora-footer-section h4 {
+              font-size: 16px;
+              margin-bottom: 15px;
+              text-align: left;
+            }
+
+            .feedora-footer-section ul li a {
+              text-align: left;
             }
 
             .feedora-footer-bottom {
@@ -288,19 +323,80 @@ function Footer({ onNavigate }) {
               text-align: center;
               gap: 10px;
             }
-          }
-
-          @media (max-width: 480px) {
-            .feedora-footer-content {
-              grid-template-columns: 1fr;
-              gap: 20px;
-            }
 
             .feedora-legal-links {
               justify-content: center;
-              gap: 15px;
             }
           }
+
+          @media (max-width: 480px) {
+            .feedora-footer {
+              padding: 24px 12px 12px;
+            }
+
+            .feedora-footer-content {
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+            }
+
+            .feedora-brand-logo {
+              height: 140px;
+              margin-bottom: 24px;
+            }
+
+            .feedora-footer-section h4 {
+              font-size: 14px;
+              margin-bottom: 12px;
+            }
+
+            .feedora-footer-section p {
+              font-size: 14px;
+              text-align: center;
+            }
+
+            .feedora-footer-section ul li a {
+              font-size: 14px;
+            }
+
+            .feedora-newsletter-input input {
+              font-size: 14px;
+              padding: 8px 10px;
+            }
+
+            .feedora-newsletter-btn {
+              font-size: 14px;
+              padding: 8px 12px;
+            }
+
+            .feedora-social-links {
+              gap: 8px;
+            }
+
+            .feedora-social-link {
+              width: 32px;
+              height: 32px;
+              font-size: 14px;
+            }
+
+            .feedora-contact-item {
+              font-size: 14px;
+              justify-content: center;
+              text-align: center;
+            }
+
+            .feedora-copyright {
+              font-size: 13px;
+            }
+
+            .feedora-legal-links a {
+              font-size: 13px;
+            }
+
+            .feedora-legal-links {
+              gap: 12px;
+            }
+          }
+
         `}
       </style>
 

@@ -102,9 +102,46 @@ const Registration = ({ onBackToLogin }) => {
   };
 
   return (
-    <div style={styles.container}>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .registration-container {
+            flex-direction: column !important;
+          }
+          
+          .registration-left {
+            display: none !important;
+          }
+          
+          .registration-right {
+            width: 100% !important;
+            min-height: 100vh !important;
+          }
+          
+          .registration-form-container {
+            padding: 24px 20px !important;
+            max-width: 100% !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .registration-container {
+            min-height: 100vh !important;
+          }
+          
+          .registration-right {
+            padding: 20px 0 !important;
+            min-height: 100vh !important;
+          }
+          
+          .registration-form-container {
+            padding: 16px 12px !important;
+          }
+        }
+      `}</style>
+      <div style={styles.container} className="registration-container">
       {/* Left Side - Brand & Features (kept from your original layout) */}
-      <div style={styles.leftSide}>
+      <div style={styles.leftSide} className="registration-left">
         <div style={styles.backgroundPattern}>
           <div style={{ ...styles.bgCircle, top: '40px', left: '40px', width: '80px', height: '80px', backgroundColor: '#059669' }} />
           <div style={{ ...styles.bgCircle, top: '160px', right: '64px', width: '64px', height: '64px', backgroundColor: '#10b981' }} />
@@ -177,8 +214,8 @@ const Registration = ({ onBackToLogin }) => {
       </div>
 
       {/* Right Side - Registration Form */}
-      <div style={styles.rightSide}>
-        <div style={styles.formContainer}>
+      <div style={styles.rightSide} className="registration-right">
+        <div style={styles.formContainer} className="registration-form-container">
           <div style={styles.formHeader}>
             <h2 style={styles.formTitle}>Create Account</h2>
             <p style={styles.formSubtitle}>Fill in your details to get started</p>
@@ -187,16 +224,36 @@ const Registration = ({ onBackToLogin }) => {
           <form style={styles.formContent} onSubmit={handleSubmit}>
             {/* Phone input (auto-normalized) */}
             <div style={styles.inputGroup}>
-              <span style={styles.countryCodeDisplay}>IN +91</span>
-              <input
-                type="tel"
-                name="phone"
-                placeholder="12345 67890"
-                value={formData.phone}
-                onChange={handleInputChange}
-                style={{ ...styles.input, paddingLeft: '70px' }} /* Adjusted paddingLeft */
-                aria-label="phone"
-              />
+              <div style={styles.phoneInputContainer}>
+                <span style={styles.countryCodeDisplay}>IN +91</span>
+                <span style={styles.phoneSeparator}>|</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="12345 67890"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  style={{ 
+                    ...styles.input, 
+                    paddingLeft: '90px', 
+                    border: 'none', 
+                    background: 'transparent', 
+                    outline: 'none',
+                    boxShadow: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.parentElement.style.borderColor = '#12b431';
+                    e.target.parentElement.style.background = 'white';
+                    e.target.parentElement.style.boxShadow = '0 0 0 3px rgba(18, 180, 49, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.parentElement.style.borderColor = '#e5e7eb';
+                    e.target.parentElement.style.background = '#f9fafb';
+                    e.target.parentElement.style.boxShadow = 'none';
+                  }}
+                  aria-label="phone"
+                />
+              </div>
               <div style={{ fontSize: 12, color: formData.phone && !isPhoneValid(formData.phone) ? 'red' : '#6b7280', marginTop: 6 }}>
                 {formData.phone ? (isPhoneValid(formData.phone) ? 'Phone looks good' : 'Enter 10 digits') : 'Enter your 10-digit mobile number'}
               </div>
@@ -297,6 +354,7 @@ const Registration = ({ onBackToLogin }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
@@ -498,13 +556,34 @@ const styles = {
     cursor: 'pointer',
     zIndex: 2
   },
+  phoneInputContainer: {
+    position: 'relative',
+    width: '100%',
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    background: '#f9fafb',
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'all 0.3s ease'
+  },
   countryCodeDisplay: {
     position: 'absolute',
-    left: '12px',
+    left: '16px',
     top: '50%',
     transform: 'translateY(-50%)',
-    color: '#6b7280',
+    color: '#4b5563',
     fontWeight: '600',
+    fontSize: '0.875rem',
+    zIndex: 2,
+    pointerEvents: 'none',
+    minWidth: '50px'
+  },
+  phoneSeparator: {
+    position: 'absolute',
+    left: '72px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#d1d5db',
     fontSize: '0.875rem',
     zIndex: 2,
     pointerEvents: 'none'
@@ -652,43 +731,6 @@ styleSheet.innerText = `
     text-decoration: underline !important;
   }
   
-  @media (max-width: 1024px) {
-    .container {
-      flex-direction: column !important;
-    }
-    
-    .left-side,
-    .right-side {
-      width: 100% !important;
-    }
-    
-    .left-side {
-      min-height: 40vh !important;
-    }
-    
-    .right-side {
-      min-height: 60vh !important;
-    }
-  }
-  
-  @media (max-width: 768px) {.form-container {
-      padding: 24px 20px !important;
-    }
-    
-    .input-row {
-      flex-direction: column !important;
-      gap: 0 !important;
-    }
-    
-    .brand-logo {
-      width: 96px !important;
-      height: 96px !important;
-    }
-    
-    .brand-title {
-      font-size: 1.5rem !important;
-    }
-  }
 `;
 document.head.appendChild(styleSheet);
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import BannerCarousel from '../HomePage/BannerCarousel';
 import CategoriesSection from '../HomePage/CategoriesSection';
-import BrandMarquee from '../HomePage/BrandMarquee';
 import FeaturedProducts from '../HomePage/FeaturedProducts';
 import SpecialOffers from '../HomePage/SpecialOffers';
 import BestSellers from '../HomePage/BestSellers';
@@ -16,7 +15,6 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
     <div className="w-full bg-white">
       <BannerCarousel />
       <CategoriesSection onCategoryClick={onCategoryClick} />
-      <BrandMarquee />
       <FeaturedProducts 
         wishlistItems={wishlistItems} 
         onWishlistToggle={onWishlistToggle}

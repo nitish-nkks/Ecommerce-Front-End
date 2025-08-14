@@ -267,6 +267,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           box-sizing: border-box;
         }
 
+
         .header-container {
           width: 100%;
           position: sticky;
@@ -276,6 +277,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           margin: 0;
           padding: 0;
+          overflow: visible;
         }
 
         .top-bar {
@@ -284,7 +286,9 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           padding: 8px 0;
           font-size: 0.85rem;
           width: 100%;
+          max-width: 100vw;
           margin: 0;
+          overflow-x: hidden;
         }
 
         .top-bar-content {
@@ -294,6 +298,8 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           justify-content: space-between;
           align-items: center;
           padding: 0 20px;
+          box-sizing: border-box;
+          width: 100%;
         }
 
         .top-bar-left {
@@ -385,6 +391,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           border-bottom: 1px solid #e5e7eb;
           width: 100%;
           margin: 0;
+          overflow: visible;
         }
 
         .middle-content {
@@ -395,6 +402,8 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           justify-content: space-between;
           padding: 0 20px;
           gap: 32px;
+          box-sizing: border-box;
+          width: 100%;
         }
 
         .logo-container {
@@ -421,6 +430,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           flex: 1;
           max-width: 500px;
           position: relative;
+          z-index: 1001;
         }
 
         .search-container {
@@ -430,7 +440,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
 
         .search-input {
           width: 100%;
-          padding: 12px 20px 12px 48px;
+          padding: 12px 60px 12px 20px;
           border: 2px solid #e5e7eb;
           border-radius: 25px;
           font-size: 0.95rem;
@@ -445,17 +455,32 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           box-shadow: 0 0 0 3px rgba(18, 180, 49, 0.1);
         }
 
-        .search-icon {
+        .search-button {
           position: absolute;
-          left: 16px;
+          right: 8px;
           top: 50%;
           transform: translateY(-50%);
-          color: #9ca3af;
-          transition: color 0.3s ease;
+          width: 40px;
+          height: 40px;
+          border: none;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #12b431, #007337);
+          color: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(18, 180, 49, 0.3);
         }
 
-        .search-input:focus + .search-icon {
-          color: #12b431;
+        .search-button:hover {
+          transform: translateY(-50%) scale(1.05);
+          box-shadow: 0 4px 12px rgba(18, 180, 49, 0.4);
+        }
+
+        .search-button:active {
+          transform: translateY(-50%) scale(0.95);
         }
 
         .search-suggestions {
@@ -469,7 +494,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           border-radius: 0 0 12px 12px;
           max-height: 400px;
           overflow-y: auto;
-          z-index: 1000;
+          z-index: 1002;
           box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
@@ -553,15 +578,6 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           color: #12b431;
         }
 
-        .register-btn {
-          background: linear-gradient(135deg, #12b431, #007337);
-          color: white;
-        }
-
-        .register-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(18, 180, 49, 0.3);
-        }
 
         .wishlist-btn {
           background: transparent;
@@ -617,6 +633,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           padding: 0;
           width: 100%;
           margin: 0;
+          overflow: visible;
         }
 
         .nav-content {
@@ -624,6 +641,9 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           margin: 0 auto;
           display: flex;
           align-items: center;
+          box-sizing: border-box;
+          width: 100%;
+          padding: 0 20px;
         }
 
         .nav-menu {
@@ -634,6 +654,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
 
         .categories-dropdown {
           position: relative;
+          z-index: 1002;
         }
 
         .categories-btn-container {
@@ -674,7 +695,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           min-width: 900px;
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
           border-radius: 8px;
-          z-index: 1000;
+          z-index: 1003;
           max-height: 500px;
           overflow-y: auto;
           display: grid;
@@ -916,40 +937,85 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
         }
 
         @media (max-width: 768px) {
-          .top-bar-left .top-bar-item:not(:first-child) {
+          .top-bar {
             display: none;
           }
           
           .middle-content {
-            gap: 16px;
-            padding: 0 16px;
-          }
-          
-          .logo-section {
-            min-width: auto;
+            gap: 8px;
+            padding: 0 10px;
+            flex-wrap: nowrap;
+            align-items: center;
           }
           
           .logo-container {
-            width: 120px;
-            height: 40px;
+            width: 80px;
+            height: 30px;
           }
           
-          .brand-name {
-            font-size: 1.25rem;
+          .logo-image {
+            width: 80px;
+            height: 60px;
+            margin-top: 5px;
+            margin-left: -20px;
           }
           
           .search-section {
             flex: 1;
+            min-width: 0;
             max-width: none;
           }
           
+          .search-input {
+            font-size: 0.85rem;
+            padding: 10px 50px 10px 15px;
+          }
+          
+          .search-button {
+            width: 36px;
+            height: 36px;
+            right: 4px;
+          }
+          
           .user-actions {
-            gap: 8px;
+            gap: 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
           }
           
           .action-button {
-            padding: 6px 12px;
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+          }
+          
+          .login-btn {
+            padding: 6px 10px;
+            min-width: 60px;
+          }
+          
+          .wishlist-btn {
+            padding: 6px;
+            width: 36px;
+            height: 36px;
+          }
+          
+          .user-name {
             font-size: 0.8rem;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .logout-btn {
+            padding: 6px 8px;
+            font-size: 0.75rem;
+          }
+          
+          .nav-content {
+            padding: 0 10px;
           }
           
           .nav-links {
@@ -961,7 +1027,8 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           }
           
           .cart-info {
-            padding: 16px;
+            padding: 12px 10px;
+            font-size: 0.8rem;
           }
 
           .categories-dropdown-content {
@@ -976,22 +1043,82 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
         }
 
         @media (max-width: 640px) {
-          .register-btn {
-            display: none;
+          .middle-content {
+            padding: 0 8px;
+            gap: 6px;
           }
           
           .search-input {
-            font-size: 0.875rem;
-            padding: 10px 16px 10px 40px;
+            font-size: 0.8rem;
+            padding: 8px 45px 8px 12px;
           }
           
-          .logo-container {
-            width: 100px;
-            height: 35px;
+          .search-button {
+            width: 32px;
+            height: 32px;
+            right: 4px;
           }
           
-          .brand-text {
-            display: none;
+          .user-actions {
+            gap: 3px;
+          }
+          
+          .action-button {
+            padding: 5px 6px;
+            font-size: 0.7rem;
+          }
+          
+          .login-btn {
+            padding: 5px 8px;
+            min-width: 50px;
+          }
+          
+          .wishlist-btn {
+            padding: 5px;
+            width: 32px;
+            height: 32px;
+          }
+          
+          .user-name {
+            font-size: 0.75rem;
+            max-width: 60px;
+          }
+          
+          .logout-btn {
+            padding: 5px 6px;
+            font-size: 0.7rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .middle-content {
+            padding: 0 5px;
+          }
+          
+          .search-input {
+            font-size: 0.75rem;
+            padding: 8px 40px 8px 10px;
+          }
+          
+          .search-button {
+            width: 30px;
+            height: 30px;
+          }
+          
+          .login-btn {
+            padding: 4px 6px;
+            min-width: 45px;
+            font-size: 0.65rem;
+          }
+          
+          .wishlist-btn {
+            width: 30px;
+            height: 30px;
+          }
+          
+          .user-name {
+            max-width: 50px;
+            font-size: 0.7rem;
           }
         }
       `}</style>
@@ -1072,7 +1199,9 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
                 className="search-input"
                 autoComplete="off"
               />
-              <Search className="search-icon" size={20} />
+              <button type="submit" className="search-button">
+                <Search size={20} />
+              </button>
               
               {showSearchSuggestions && (
                 <div className="search-suggestions">
@@ -1128,9 +1257,6 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
                 <button className="action-button login-btn" onClick={onLoginClick}>
                   <User size={16} />
                   {t.login}
-                </button>
-                <button className="action-button register-btn" onClick={onRegisterClick}>
-                  {t.registration}
                 </button>
               </>
             )}
