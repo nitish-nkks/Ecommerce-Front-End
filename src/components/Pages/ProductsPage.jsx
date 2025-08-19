@@ -254,7 +254,9 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
     if (!getItemInCart(product.id)) {
       handleAddToCart(product);
     }
-    // Navigate to checkout
+
+      console.log('navigate: ',onNavigate);
+      // Navigate to checkout
     if (onNavigate) {
       onNavigate('checkout');
     }

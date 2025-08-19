@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
+import { getProducts } from '../../api/api';
 
 const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
   const [newProductsSlide, setNewProductsSlide] = useState(0);
@@ -27,92 +28,128 @@ const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
     }
   };
 
-  const newProducts = [
-    {
-      id: 12,
-      name: "AMOXIRUM TAB",
-      image: "/src/assets/scb1.png",
-      price: 159.50,
-      originalPrice: 200.48,
-      currentPrice: "Rs159.50",
-      oldPrice: "Rs200.48",
-      discount: 20,
-      badge: "NEW",
-      brand: "VetCare",
-      category: "Medicine",
-      subcategory: "Antibiotics"
-    },
-    {
-      id: 13,
-      name: "Calgophos",
-      image: "/src/assets/scb2.png", 
-      price: 2281.10,
-      originalPrice: 2820.00,
-      currentPrice: "Rs2,281.10",
-      oldPrice: "Rs2,820.00",
-      discount: 19,
-      badge: "NEW",
-      brand: "NutriVet",
-      category: "Supplements",
-      subcategory: "Minerals"
-    },
-    {
-      id: 14,
-      name: "SOKRENA W.S.",
-      image: "/src/assets/scb3.png",
-      price: 3854.92,
-      originalPrice: 4701.12,
-      currentPrice: "Rs3,854.92",
-      oldPrice: "Rs4,701.12", 
-      discount: 18,
-      badge: "NEW",
-      brand: "PoultryPro",
-      category: "Poultry",
-      subcategory: "Growth Promoters"
-    },
-    {
-      id: 15,
-      name: "Vimeral Forte",
-      image: "/src/assets/scb4.png",
-      price: 688.00,
-      originalPrice: 800.00,
-      currentPrice: "Rs688.00",
-      oldPrice: "Rs800.00",
-      discount: 14, 
-      badge: "NEW",
-      brand: "VitalVet",
-      category: "Supplements",
-      subcategory: "Vitamins"
-    },
-    {
-      id: 16,
-      name: "Fish Feed Pro",
-      image: "/src/assets/scb1.png",
-      price: 1250.00,
-      originalPrice: 1500.00,
-      currentPrice: "Rs1,250.00",
-      oldPrice: "Rs1,500.00",
-      discount: 17,
-      badge: "NEW",
-      brand: "AquaFeed",
-      category: "Fish",
-      subcategory: "Feed"
-    },
-    {
-      id: 17,
-      name: "Cattle Nutrition Plus", 
-      image: "/src/assets/scb2.png",
-      price: 2800.00,
-      originalPrice: 3200.00,
-      currentPrice: "Rs2,800.00",
-      oldPrice: "Rs3,200.00",
-      discount: 12,
-      badge: "NEW",
-      brand: "CattleCare",
-      category: "Cattle",
-      subcategory: "Feed Supplements"
-    }
-  ];
+    const [newProducts, setNewProducts] = useState([]);
+
+    useEffect(() => {
+        getProducts()
+            .then((res) => {
+                const products = res.data?.data || [];
+
+                const mappedProducts = products
+                    .filter((p) => p.isNewProduct) // ✅ Keep only featured products
+                    .map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        image: p.image || "/src/assets/placeholder.png",
+                        price: p.price,
+                        originalPrice: p.price,
+                        oldPrice: `Rs${p.price.toLocaleString()}`,
+                        currentPrice:
+                            p.discountPercentage > 0
+                                ? `Rs${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                                : null,
+                        discount: p.discountPercentage,
+                        badge: p.isNewProduct
+                                ? "NEW" : null,
+                        brand: null,
+                        category: p.categoryName,
+                        subcategory: null,
+                    }));
+
+                setNewProducts(mappedProducts);
+            })
+            .catch((err) => {
+                console.error("Error fetching products:", err);
+            });
+    }, []);
+
+
+  //const newProducts = [
+  //  {
+  //    id: 12,
+  //    name: "AMOXIRUM TAB",
+  //    image: "/src/assets/scb1.png",
+  //    price: 159.50,
+  //    originalPrice: 200.48,
+  //    currentPrice: "Rs159.50",
+  //    oldPrice: "Rs200.48",
+  //    discount: 20,
+  //    badge: "NEW",
+  //    brand: "VetCare",
+  //    category: "Medicine",
+  //    subcategory: "Antibiotics"
+  //  },
+  //  {
+  //    id: 13,
+  //    name: "Calgophos",
+  //    image: "/src/assets/scb2.png", 
+  //    price: 2281.10,
+  //    originalPrice: 2820.00,
+  //    currentPrice: "Rs2,281.10",
+  //    oldPrice: "Rs2,820.00",
+  //    discount: 19,
+  //    badge: "NEW",
+  //    brand: "NutriVet",
+  //    category: "Supplements",
+  //    subcategory: "Minerals"
+  //  },
+  //  {
+  //    id: 14,
+  //    name: "SOKRENA W.S.",
+  //    image: "/src/assets/scb3.png",
+  //    price: 3854.92,
+  //    originalPrice: 4701.12,
+  //    currentPrice: "Rs3,854.92",
+  //    oldPrice: "Rs4,701.12", 
+  //    discount: 18,
+  //    badge: "NEW",
+  //    brand: "PoultryPro",
+  //    category: "Poultry",
+  //    subcategory: "Growth Promoters"
+  //  },
+  //  {
+  //    id: 15,
+  //    name: "Vimeral Forte",
+  //    image: "/src/assets/scb4.png",
+  //    price: 688.00,
+  //    originalPrice: 800.00,
+  //    currentPrice: "Rs688.00",
+  //    oldPrice: "Rs800.00",
+  //    discount: 14, 
+  //    badge: "NEW",
+  //    brand: "VitalVet",
+  //    category: "Supplements",
+  //    subcategory: "Vitamins"
+  //  },
+  //  {
+  //    id: 16,
+  //    name: "Fish Feed Pro",
+  //    image: "/src/assets/scb1.png",
+  //    price: 1250.00,
+  //    originalPrice: 1500.00,
+  //    currentPrice: "Rs1,250.00",
+  //    oldPrice: "Rs1,500.00",
+  //    discount: 17,
+  //    badge: "NEW",
+  //    brand: "AquaFeed",
+  //    category: "Fish",
+  //    subcategory: "Feed"
+  //  },
+  //  {
+  //    id: 17,
+  //    name: "Cattle Nutrition Plus", 
+  //    image: "/src/assets/scb2.png",
+  //    price: 2800.00,
+  //    originalPrice: 3200.00,
+  //    currentPrice: "Rs2,800.00",
+  //    oldPrice: "Rs3,200.00",
+  //    discount: 12,
+  //    badge: "NEW",
+  //    brand: "CattleCare",
+  //    category: "Cattle",
+  //    subcategory: "Feed Supplements"
+  //  }
+  //];
 
   const goToPrevNewProducts = () => {
     setNewProductsSlide(Math.max(0, newProductsSlide - 1));
@@ -323,11 +360,17 @@ const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
         }
 
         .new-product-name {
-          font-size: 0.95rem;
+         font-size: 0.95rem;
           font-weight: 600;
           color: #1f2937;
           margin-bottom: 6px;
           line-height: 1.2;
+          white-space: nowrap;        /* Prevents text from wrapping */
+          overflow: hidden;           /* Hides overflowing text */
+          text-overflow: ellipsis;    /* Adds the "..." */
+          max-width: 250px;           /* Adjust width as needed */
+          display: inline-block;      /* Required for ellipsis to work */
+          vertical-align: middle;
         }
 
         .new-product-price {
@@ -392,7 +435,7 @@ const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
         }
 
         .new-buy-now {
-          background: #10b981;
+          background: #3b82f6;
           color: white;
         }
 
@@ -510,12 +553,21 @@ const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
                     </button>
                   </div>
                   <div className="new-product-content">
-                    <h3 className="new-product-name">{product.name}</h3>
-                    <div className="new-product-price">
-                      <span className="new-current-price">{product.currentPrice}</span>
-                      <span className="new-old-price">{product.oldPrice}</span>
-                      <span className="new-discount">{product.discount}</span>
-                    </div>
+                    <h3 className="new-product-name">{product.name}</h3>                  
+                          <div className="new-product-price">
+                              {product.discount === null || product.discount === 0 && (
+                                  <span className="new-current-price">{product.oldPrice}</span>
+                              )}
+                              {product.discount != null && product.discount !== 0 && (
+                                  <span className="new-old-price">{product.oldPrice}</span>
+                              )}
+                              <span className="new-current-price">{product.currentPrice}</span>
+                              {product.discount != null && product.discount !== 0 && (
+                                  <span className="new-discount">
+                                      {`-${product.discount}%`}
+                                  </span>
+                              )}
+                          </div>
                     <div className="new-product-buttons">
                       <button 
                         className="new-btn new-add-cart"

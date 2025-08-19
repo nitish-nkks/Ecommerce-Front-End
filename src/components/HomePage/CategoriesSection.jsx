@@ -1,72 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import { getCategories } from '../../api/api';
 
 const CategoriesSection = () => {
-  const categories = [
-    {
-      id: 1,
-      name: "Livestock Feeds",
-      image: "/src/assets/scb1.png",
-      description: "Premium quality feeds for all livestock animals",
-      icon: "🐄",
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      id: 2,
-      name: "Poultry Feeds", 
-      image: "/src/assets/scb2.png",
-      description: "Specialized nutrition for poultry farming",
-      icon: "🐔",
-      color: "from-orange-500 to-red-500"
-    },
-    {
-      id: 3,
-      name: "Shrimp Feeds",
-      image: "/src/assets/scb3.png", 
-      description: "High-protein feeds for aquaculture",
-      icon: "🦐",
-      color: "from-teal-500 to-green-500"
-    },
-    {
-      id: 4,
-      name: "Cattle Feed",
-      image: "/src/assets/scb4.png",
-      description: "Nutritious feeds for dairy and beef cattle", 
-      icon: "🐮",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      id: 5,
-      name: "Livestock Medicine",
-      image: "/src/assets/scb3.png",
-      description: "Veterinary medicines for livestock health",
-      icon: "💊",
-      color: "from-green-500 to-emerald-500"
-    },
-    {
-      id: 6,
-      name: "Poultry Medicines",
-      image: "/src/assets/scb1.png",
-      description: "Healthcare solutions for poultry farming",
-      icon: "🏥",
-      color: "from-yellow-500 to-orange-500"
-    },
-    {
-      id: 7,
-      name: "Fish & Shrimp Medicines", 
-      image: "/src/assets/scb3.png",
-      description: "Aquaculture health and medicine products",
-      icon: "🐟",
-      color: "from-cyan-500 to-blue-500"
-    },
-    {
-      id: 8,
-      name: "Cattle Medicines",
-      image: "/src/assets/scb4.png", 
-      description: "Comprehensive cattle healthcare solutions",
-      icon: "🩺",
-      color: "from-indigo-500 to-purple-500"
-    }
-  ];
+
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        getCategories()
+            .then(res => {
+                const categoryList = (res.data?.data || []).filter(cat => cat.parentCategoryId === null);
+                setCategories(categoryList);
+            })
+            .catch(err => console.error(err));
+    }, []);
+
+
+  //const categories = [
+  //  {
+  //    id: 1,
+  //    name: "Livestock Feeds",
+  //    image: "/src/assets/scb1.png",
+  //    description: "Premium quality feeds for all livestock animals",
+  //    icon: "🐄",
+  //    color: "from-blue-500 to-blue-600"
+  //  },
+  //  {
+  //    id: 2,
+  //    name: "Poultry Feeds", 
+  //    image: "/src/assets/scb2.png",
+  //    description: "Specialized nutrition for poultry farming",
+  //    icon: "🐔",
+  //    color: "from-orange-500 to-red-500"
+  //  },
+  //  {
+  //    id: 3,
+  //    name: "Shrimp Feeds",
+  //    image: "/src/assets/scb3.png", 
+  //    description: "High-protein feeds for aquaculture",
+  //    icon: "🦐",
+  //    color: "from-teal-500 to-green-500"
+  //  },
+  //  {
+  //    id: 4,
+  //    name: "Cattle Feed",
+  //    image: "/src/assets/scb4.png",
+  //    description: "Nutritious feeds for dairy and beef cattle", 
+  //    icon: "🐮",
+  //    color: "from-purple-500 to-pink-500"
+  //  },
+  //  {
+  //    id: 5,
+  //    name: "Livestock Medicine",
+  //    image: "/src/assets/scb3.png",
+  //    description: "Veterinary medicines for livestock health",
+  //    icon: "💊",
+  //    color: "from-green-500 to-emerald-500"
+  //  },
+  //  {
+  //    id: 6,
+  //    name: "Poultry Medicines",
+  //    image: "/src/assets/scb1.png",
+  //    description: "Healthcare solutions for poultry farming",
+  //    icon: "🏥",
+  //    color: "from-yellow-500 to-orange-500"
+  //  },
+  //  {
+  //    id: 7,
+  //    name: "Fish & Shrimp Medicines", 
+  //    image: "/src/assets/scb3.png",
+  //    description: "Aquaculture health and medicine products",
+  //    icon: "🐟",
+  //    color: "from-cyan-500 to-blue-500"
+  //  },
+  //  {
+  //    id: 8,
+  //    name: "Cattle Medicines",
+  //    image: "/src/assets/scb4.png", 
+  //    description: "Comprehensive cattle healthcare solutions",
+  //    icon: "🩺",
+  //    color: "from-indigo-500 to-purple-500"
+  //  }
+  //];
 
   return (
     <>

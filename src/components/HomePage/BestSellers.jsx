@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
+import { getProducts } from '../../api/api';
 
 const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
   const [bestSellingSlide, setBestSellingSlide] = useState(0);
@@ -27,78 +28,114 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
     }
   };
 
-  const bestSellingProducts = [
-    {
-      id: 7,
-      name: "T C Powder (100g) – Broad Spectrum Antibiotic",
-      image: "/src/assets/scb2.png",
-      price: 77.10,
-      originalPrice: 99.23,
-      currentPrice: "Rs77.10",
-      oldPrice: "Rs99.23",
-      discount: 22,
-      badge: "Limited Deal",
-      brand: "VetCare",
-      category: "Medicine",
-      subcategory: "Antibiotics"
-    },
-    {
-      id: 8,
-      name: "E Care Se - Vitamin E Feed Supplement (200gm)",
-      image: "/src/assets/scb1.png",
-      price: 288.82,
-      originalPrice: 563.00,
-      currentPrice: "Rs288.82",
-      oldPrice: "Rs563.00",
-      discount: 49,
-      badge: "Limited Deal",
-      brand: "VitalVet",
-      category: "Supplements",
-      subcategory: "Vitamins"
-    },
-    {
-      id: 9,
-      name: "Electrol C- Electrolyte for Poultry (1 Kg)",
-      image: "/src/assets/p1.png",
-      price: 144.30,
-      originalPrice: 290.00,
-      currentPrice: "Rs144.30",
-      oldPrice: "Rs290.00",
-      discount: 50,
-      badge: "Limited Deal",
-      brand: "PoultryPro",
-      category: "Poultry",
-      subcategory: "Growth Promoters"
-    },
-    {
-      id: 10,
-      name: "Vendox N (50gm) – Ideal Antibiotic for Mixed Infection",
-      image: "/src/assets/p2.png",
-      price: 126.81,
-      originalPrice: 195.00,
-      currentPrice: "Rs126.81",
-      oldPrice: "Rs195.00",
-      discount: 35,
-      badge: "Limited Deal",
-      brand: "VetCare",
-      category: "Medicine",
-      subcategory: "Antibiotics"
-    },
-    {
-      id: 11,
-      name: "Calgophos",
-      image: "/src/assets/scb2.png", 
-      price: 2281.10,
-      originalPrice: 2820.00,
-      currentPrice: "Rs2,281.10",
-      oldPrice: "Rs2,820.00",
-      discount: 19,
-      badge: "Best Seller",
-      brand: "NutriVet",
-      category: "Supplements",
-      subcategory: "Minerals"
-    },
-  ];
+    const [bestSellingProducts, setBestSellingProducts] = useState([]);
+
+    useEffect(() => {
+        getProducts()
+            .then((res) => {
+                const products = res.data?.data || [];
+
+                const mappedProducts = products
+                    .filter((p) => p.isBestSeller) 
+                    .map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        image: p.image || "/src/assets/placeholder.png",
+                        price: p.price,
+                        originalPrice: p.price,
+                        oldPrice: `Rs${p.price.toLocaleString()}`,
+                        currentPrice:
+                            p.discountPercentage > 0
+                                ? `Rs${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                                : null,
+                        discount: p.discountPercentage,
+                        badge: p.isBestSeller
+                                ? "Best Seller"
+                                : null,
+                        brand: null,
+                        category: p.categoryName,
+                        subcategory: null,
+                    }));
+
+                setBestSellingProducts(mappedProducts);
+            })
+            .catch((err) => {
+                console.error("Error fetching products:", err);
+            });
+    }, []);
+
+  //const bestSellingProducts = [
+  //  {
+  //    id: 7,
+  //    name: "T C Powder (100g) – Broad Spectrum Antibiotic",
+  //    image: "/src/assets/scb2.png",
+  //    price: 77.10,
+  //    originalPrice: 99.23,
+  //    currentPrice: "Rs77.10",
+  //    oldPrice: "Rs99.23",
+  //    discount: 22,
+  //    badge: "Limited Deal",
+  //    brand: "VetCare",
+  //    category: "Medicine",
+  //    subcategory: "Antibiotics"
+  //  },
+  //  {
+  //    id: 8,
+  //    name: "E Care Se - Vitamin E Feed Supplement (200gm)",
+  //    image: "/src/assets/scb1.png",
+  //    price: 288.82,
+  //    originalPrice: 563.00,
+  //    currentPrice: "Rs288.82",
+  //    oldPrice: "Rs563.00",
+  //    discount: 49,
+  //    badge: "Limited Deal",
+  //    brand: "VitalVet",
+  //    category: "Supplements",
+  //    subcategory: "Vitamins"
+  //  },
+  //  {
+  //    id: 9,
+  //    name: "Electrol C- Electrolyte for Poultry (1 Kg)",
+  //    image: "/src/assets/p1.png",
+  //    price: 144.30,
+  //    originalPrice: 290.00,
+  //    currentPrice: "Rs144.30",
+  //    oldPrice: "Rs290.00",
+  //    discount: 50,
+  //    badge: "Limited Deal",
+  //    brand: "PoultryPro",
+  //    category: "Poultry",
+  //    subcategory: "Growth Promoters"
+  //  },
+  //  {
+  //    id: 10,
+  //    name: "Vendox N (50gm) – Ideal Antibiotic for Mixed Infection",
+  //    image: "/src/assets/p2.png",
+  //    price: 126.81,
+  //    originalPrice: 195.00,
+  //    currentPrice: "Rs126.81",
+  //    oldPrice: "Rs195.00",
+  //    discount: 35,
+  //    badge: "Limited Deal",
+  //    brand: "VetCare",
+  //    category: "Medicine",
+  //    subcategory: "Antibiotics"
+  //  },
+  //  {
+  //    id: 11,
+  //    name: "Calgophos",
+  //    image: "/src/assets/scb2.png", 
+  //    price: 2281.10,
+  //    originalPrice: 2820.00,
+  //    currentPrice: "Rs2,281.10",
+  //    oldPrice: "Rs2,820.00",
+  //    discount: 19,
+  //    badge: "Best Seller",
+  //    brand: "NutriVet",
+  //    category: "Supplements",
+  //    subcategory: "Minerals"
+  //  },
+  //];
 
   const goToPrevBestSelling = () => {
     setBestSellingSlide(Math.max(0, bestSellingSlide - 1));
@@ -258,7 +295,7 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
           position: absolute;
           top: 12px;
           left: 12px;
-          background: #dc2626;
+          background: #f59e0b;
           color: white;
           padding: 4px 8px;
           border-radius: 12px;
@@ -309,11 +346,17 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
         }
 
         .best-selling-product-name {
-          font-size: 0.95rem;
+         font-size: 0.95rem;
           font-weight: 600;
           color: #1f2937;
           margin-bottom: 6px;
           line-height: 1.2;
+          white-space: nowrap;        /* Prevents text from wrapping */
+          overflow: hidden;           /* Hides overflowing text */
+          text-overflow: ellipsis;    /* Adds the "..." */
+          max-width: 250px;           /* Adjust width as needed */
+          display: inline-block;      /* Required for ellipsis to work */
+          vertical-align: middle;
         }
 
         .best-selling-product-price {
@@ -498,9 +541,18 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
                   <div className="best-selling-product-content">
                     <h3 className="best-selling-product-name">{product.name}</h3>
                     <div className="best-selling-product-price">
-                      <span className="best-selling-current-price">{product.currentPrice}</span>
-                      <span className="best-selling-old-price">{product.oldPrice}</span>
-                      <span className="best-selling-discount">{product.discount}</span>
+                      {product.discount === null || product.discount === 0 && (
+                         <span className="best-selling-current-price">{product.oldPrice}</span>  
+                      )}
+                      {product.discount != null && product.discount !== 0 && (
+                         <span className="best-selling-old-price">{product.oldPrice}</span>
+                      )}
+                      <span className="best-selling-current-price">{product.currentPrice}</span>  
+                      {product.discount != null && product.discount !== 0 && (
+                          <span className="featured-discount">
+                             {`-${product.discount}%`}
+                          </span>
+                      )}
                     </div>
                     <div className="best-selling-product-buttons">
                       <button 

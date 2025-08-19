@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
+import { getProducts } from '../../api/api';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
-const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
+const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
+
   const [featuredSlide, setFeaturedSlide] = useState(0);
+  const [open, setOpen] = useState(false);
+  const handleClose = () => setOpen(false);
 
   const isInWishlist = (productId) => {
     return wishlistItems.some(item => item.id === productId);
@@ -15,104 +20,184 @@ const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart })
     }
   };
 
+  const handleBuyNow = (product) => {
+      // Add to cart first if not already added
+      const isLoggedIn = !!localStorage.getItem("authToken"); 
+      if (!isLoggedIn) {
+          setOpen(true); // ⛔ show login modal
+          console.log('LoggedIn', isLoggedIn);
+          if (!getItemInCart(product.id)) {
+              console.log("Product not in cart, adding to cart first:", product);
+              handleAddToCart(product);
+          }
+          return;
+      }  
+
+      console.log(onNavigate);
+      if (onNavigate) {
+          onNavigate('checkout');
+      }
+  };
+
+  const getItemInCart = (productId) => {
+      console.log("cartItems: ", cartItems);
+      console.log("productId: ", productId);
+        return cartItems.find(item => item.id === productId);
+  };
+
   const handleAddToCart = (product) => {
     if (onAddToCart) {
       onAddToCart(product);
-      
+
       // Trigger animation from the clicked button
       const event = window.event || {};
       if (event.target) {
         createProductCartAnimation(event.target.closest('button'), product);
       }
     }
-  };
+    };
+    //const handleAddToCart = (product, quantity = 1) => {
+    //    if (onAddToCart) {
+    //        onAddToCart(product, quantity);
 
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "AMOXIRUM TAB",
-      image: "/src/assets/scb1.png",
-      price: 159.50,
-      originalPrice: 200.48,
-      currentPrice: "Rs159.50",
-      oldPrice: "Rs200.48",
-      discount: 20,
-      badge: "HOT DEAL",
-      brand: "VetCare",
-      category: "Medicine",
-      subcategory: "Antibiotics"
-    },
-    {
-      id: 2,
-      name: "Calgophos",
-      image: "/src/assets/scb2.png", 
-      price: 2281.10,
-      originalPrice: 2820.00,
-      currentPrice: "Rs2,281.10",
-      oldPrice: "Rs2,820.00",
-      discount: 19,
-      badge: "HOT DEAL",
-      brand: "NutriVet",
-      category: "Supplements",
-      subcategory: "Minerals"
-    },
-    {
-      id: 3,
-      name: "SOKRENA W.S.",
-      image: "/src/assets/scb3.png",
-      price: 3854.92,
-      originalPrice: 4701.12,
-      currentPrice: "Rs3,854.92",
-      oldPrice: "Rs4,701.12", 
-      discount: 18,
-      badge: "HOT DEAL",
-      brand: "PoultryPro",
-      category: "Poultry",
-      subcategory: "Growth Promoters"
-    },
-    {
-      id: 4,
-      name: "Vimeral Forte",
-      image: "/src/assets/scb4.png",
-      price: 688.00,
-      originalPrice: 800.00,
-      currentPrice: "Rs688.00",
-      oldPrice: "Rs800.00",
-      discount: 14, 
-      badge: "HOT DEAL",
-      brand: "VitalVet",
-      category: "Supplements",
-      subcategory: "Vitamins"
-    },
-    {
-      id: 5,
-      name: "Fish Feed Pro",
-      image: "/src/assets/scb1.png",
-      price: 1250.00,
-      originalPrice: 1500.00,
-      currentPrice: "Rs1,250.00",
-      oldPrice: "Rs1,500.00",
-      discount: 17,
-      badge: "NEW",
-      brand: "AquaFeed",
-      category: "Fish",
-      subcategory: "Feed"
-    },
-    {
-      id: 6,
-      name: "Cattle Nutrition Plus", 
-      image: "/src/assets/scb2.png",
-      price: 2800.00,
-      originalPrice: 3200.00,
-      currentPrice: "Rs2,800.00",
-      oldPrice: "Rs3,200.00",
-      discount: 12,
-      badge: "POPULAR",
-      brand: "CattleCare",
-      category: "Cattle",
-      subcategory: "Feed Supplements"
-    }
-  ];
+    //        // Trigger animation only when adding the first time
+    //        if (quantity > 0) {
+    //            const event = window.event || {};
+    //            if (event.target) {
+    //                createProductCartAnimation(event.target.closest('button'), product);
+    //            }
+    //        }
+    //    }
+    //};
+
+    //const cartItem = cartItems?.find(item => item.id === product.id);
+
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+
+    useEffect(() => {
+        getProducts()
+            .then((res) => {
+                const products = res.data?.data || [];
+
+                const mappedProducts = products
+                    .filter((p) => p.isFeatured) // ✅ Keep only featured products
+                    .map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        image: p.image || "/src/assets/placeholder.png",
+                        price: p.price,
+                        originalPrice: p.price,
+                        oldPrice: `Rs${p.price.toLocaleString()}`,
+                        currentPrice:
+                            p.discountPercentage > 0
+                                ? `Rs${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                                : null,
+                        discount: p.discountPercentage,
+                        badge: p.isFeatured
+                            ? "Exclusive"
+                            : p.isNewProduct
+                                ? "NEW"
+                                : p.isBestSeller
+                                    ? "POPULAR"
+                                    : null,
+                        brand: null,
+                        category: p.categoryName,
+                        subcategory: null,
+                    }));
+
+                setFeaturedProducts(mappedProducts);
+            })
+            .catch((err) => {
+                console.error("Error fetching products:", err);
+            });
+    }, []);
+
+  //const featuredProducts = [
+  //  {
+  //    id: 1,
+  //    name: "AMOXIRUM TAB",
+  //    image: "/src/assets/scb1.png",
+  //    price: 159.50,
+  //    originalPrice: 200.48,
+  //    currentPrice: "Rs159.50",
+  //    oldPrice: "Rs200.48",
+  //    discount: 20,
+  //    badge: "HOT DEAL",
+  //    brand: "VetCare",
+  //    category: "Medicine",
+  //    subcategory: "Antibiotics"
+  //  },
+  //  {
+  //    id: 2,
+  //    name: "Calgophos",
+  //    image: "/src/assets/scb2.png", 
+  //    price: 2281.10,
+  //    originalPrice: 2820.00,
+  //    currentPrice: "Rs2,281.10",
+  //    oldPrice: "Rs2,820.00",
+  //    discount: 19,
+  //    badge: "HOT DEAL",
+  //    brand: "NutriVet",
+  //    category: "Supplements",
+  //    subcategory: "Minerals"
+  //  },
+  //  {
+  //    id: 3,
+  //    name: "SOKRENA W.S.",
+  //    image: "/src/assets/scb3.png",
+  //    price: 3854.92,
+  //    originalPrice: 4701.12,
+  //    currentPrice: "Rs3,854.92",
+  //    oldPrice: "Rs4,701.12", 
+  //    discount: 18,
+  //    badge: "HOT DEAL",
+  //    brand: "PoultryPro",
+  //    category: "Poultry",
+  //    subcategory: "Growth Promoters"
+  //  },
+  //  {
+  //    id: 4,
+  //    name: "Vimeral Forte",
+  //    image: "/src/assets/scb4.png",
+  //    price: 688.00,
+  //    originalPrice: 800.00,
+  //    currentPrice: "Rs688.00",
+  //    oldPrice: "Rs800.00",
+  //    discount: 14, 
+  //    badge: "HOT DEAL",
+  //    brand: "VitalVet",
+  //    category: "Supplements",
+  //    subcategory: "Vitamins"
+  //  },
+  //  {
+  //    id: 5,
+  //    name: "Fish Feed Pro",
+  //    image: "/src/assets/scb1.png",
+  //    price: 1250.00,
+  //    originalPrice: 1500.00,
+  //    currentPrice: "Rs1,250.00",
+  //    oldPrice: "Rs1,500.00",
+  //    discount: 17,
+  //    badge: "NEW",
+  //    brand: "AquaFeed",
+  //    category: "Fish",
+  //    subcategory: "Feed"
+  //  },
+  //  {
+  //    id: 6,
+  //    name: "Cattle Nutrition Plus", 
+  //    image: "/src/assets/scb2.png",
+  //    price: 2800.00,
+  //    originalPrice: 3200.00,
+  //    currentPrice: "Rs2,800.00",
+  //    oldPrice: "Rs3,200.00",
+  //    discount: 12,
+  //    badge: "POPULAR",
+  //    brand: "CattleCare",
+  //    category: "Cattle",
+  //    subcategory: "Feed Supplements"
+  //  }
+  //];
 
   const goToPrevFeatured = () => {
     setFeaturedSlide(Math.max(0, featuredSlide - 1));
@@ -272,7 +357,7 @@ const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart })
           position: absolute;
           top: 12px;
           left: 12px;
-          background: #dc2626;
+          background: #9333ea;
           color: white;
           padding: 4px 8px;
           border-radius: 12px;
@@ -328,6 +413,12 @@ const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart })
           color: #1f2937;
           margin-bottom: 6px;
           line-height: 1.2;
+          white-space: nowrap;        /* Prevents text from wrapping */
+          overflow: hidden;           /* Hides overflowing text */
+          text-overflow: ellipsis;    /* Adds the "..." */
+          max-width: 250px;           /* Adjust width as needed */
+          display: inline-block;      /* Required for ellipsis to work */
+          vertical-align: middle; 
         }
 
         .featured-product-price {
@@ -471,75 +562,126 @@ const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart })
             flex: 0 0 200px;
           }
         }
+        .quantity-controls {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .quantity-controls button {
+          width: 30px;
+          height: 30px;
+          font-size: 18px;
+          cursor: pointer;
+        }
+
       `}</style>
 
-      <div className="featured-section">
-        <div className="featured-container">
-          <div className="featured-header">
-            <h2 className="featured-title">Featured Products</h2>
-            <p className="featured-subtitle">
-              Discover our best-selling products with exclusive deals and premium quality guaranteed
-            </p>
+          <div className="featured-section">
+              <div className="featured-container">
+                  <div className="featured-header">
+                      <h2 className="featured-title">Featured Products</h2>
+                      <p className="featured-subtitle">
+                          Discover our best-selling products with exclusive deals and premium quality guaranteed
+                      </p>
+                  </div>
+
+                  {featuredProducts.length === 0 ? (
+                      <div className="text-center py-10 text-gray-500 font-medium">
+                          🚫 No featured products available at the moment.
+                      </div>
+                  ) : (
+                      <div className="featured-scroll-container">
+                          <div
+                              className="featured-scroll-wrapper"
+                              style={{
+                                  transform: `translateX(-${featuredSlide * 304}px)`
+                              }}
+                          >
+                              {featuredProducts.map((product) => (
+                                  <div key={product.id} className="featured-product">
+                                      <div className="featured-product-image">
+                                          <img
+                                              src={product.image}
+                                              alt={product.name}
+                                              onError={(e) => {
+                                                  e.target.style.display = 'none';
+                                                  e.target.parentNode.innerHTML = `<div class="featured-product-placeholder">${product.name}</div>`;
+                                              }}
+                                          />
+                                          <div className="featured-product-badge">{product.badge}</div>
+                                          <button
+                                              className={`wishlist-heart ${isInWishlist(product.id) ? 'filled' : ''}`}
+                                              onClick={() => handleWishlistClick(product)}
+                                              title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                          >
+                                              <Heart size={18} fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
+                                          </button>
+                                      </div>
+                                      <div className="featured-product-content">
+                                          <h3 className="featured-product-name">{product.name}</h3>
+                                          <div className="featured-product-price">
+                                              {product.discount === null || product.discount === 0 && (
+                                                  <span className="featured-current-price">{product.oldPrice}</span>
+                                              )}
+                                              {product.discount != null && product.discount !== 0 && (
+                                                  <span className="featured-old-price">{product.oldPrice}</span>
+                                              )}                                             
+                                              <span className="featured-current-price">{product.currentPrice}</span>
+                                              {product.discount != null && product.discount !== 0 && (
+                                                  <span className="featured-discount">
+                                                      {`-${product.discount}%`}
+                                                  </span>
+                                              )}
+                                          </div>
+                                          <div className="featured-product-buttons">
+                                              <button
+                                                  className="featured-btn featured-add-cart"
+                                                  onClick={() => handleAddToCart(product)}
+                                                  title="Add to Cart"
+                                              >
+                                                  🛒 ADD TO CART
+                                              </button>                                    
+                                    
+                                              <button className="featured-btn featured-buy-now" onClick={() => handleBuyNow(product)}>🛍️ BUY NOW</button>                                             
+                                          </div>
+
+
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+
+                          <button className="featured-nav prev" onClick={goToPrevFeatured}>
+                              ‹
+                          </button>
+                          <button className="featured-nav next" onClick={goToNextFeatured}>
+                              ›
+                          </button>
+                      </div>
+                  )}
+              </div>
           </div>
-          
-          <div className="featured-scroll-container">
-            <div 
-              className="featured-scroll-wrapper"
-              style={{
-                transform: `translateX(-${featuredSlide * 304}px)`
-              }}
-            >
-              {featuredProducts.map((product) => (
-                <div key={product.id} className="featured-product">
-                  <div className="featured-product-image">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.parentNode.innerHTML = `<div class="featured-product-placeholder">${product.name}</div>`;
+
+          {/* Custom Login Required Modal */}
+          <Dialog open={open} onClose={handleClose}>
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogContent>
+                  Login is required to proceed with buying this product.
+              </DialogContent>
+              <DialogActions>
+                  <Button onClick={handleClose}>Cancel</Button>
+                  <button
+                      className="featured-btn featured-add-cart"
+                      onClick={() => {
+                          setOpen(false);
+                          onNavigate && onNavigate("login");
                       }}
-                    />
-                    <div className="featured-product-badge">{product.badge}</div>
-                    <button 
-                      className={`wishlist-heart ${isInWishlist(product.id) ? 'filled' : ''}`}
-                      onClick={() => handleWishlistClick(product)}
-                      title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                    >
-                      <Heart size={18} fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-                  <div className="featured-product-content">
-                    <h3 className="featured-product-name">{product.name}</h3>
-                    <div className="featured-product-price">
-                      <span className="featured-current-price">{product.currentPrice}</span>
-                      <span className="featured-old-price">{product.oldPrice}</span>
-                      <span className="featured-discount">{product.discount}</span>
-                    </div>
-                    <div className="featured-product-buttons">
-                      <button 
-                        className="featured-btn featured-add-cart"
-                        onClick={() => handleAddToCart(product)}
-                        title="Add to Cart"
-                      >
-                        🛒 ADD TO CART
-                      </button>
-                      <button className="featured-btn featured-buy-now">🛍️ BUY NOW</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <button className="featured-nav prev" onClick={goToPrevFeatured}>
-              ‹
-            </button>
-            <button className="featured-nav next" onClick={goToNextFeatured}>
-              ›
-            </button>
-          </div>
-        </div>
-      </div>
+                  >
+                      🔑 LOGIN
+                  </button>
+              </DialogActions>
+          </Dialog>
     </>
   );
 };

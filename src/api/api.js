@@ -21,6 +21,12 @@ export const updateCustomerAddress = (addressId, data) => {
   return axiosInstance.put(`/CustomerAddresses/${addressId}`, data);
 };
 
+export const getCategories = () => axiosInstance.get('/Categories');
+
+export const getProducts = () => axiosInstance.get('/Products');
+
+export const getCategoriesWithProducts = () => axiosInstance.get('/Categories/categories-with-products');
+
 //dummy
 export const addToCart = (data) => {
   return axiosInstance.post("/CartItem", data);

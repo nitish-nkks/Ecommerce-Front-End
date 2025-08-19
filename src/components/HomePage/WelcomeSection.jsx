@@ -1,6 +1,10 @@
 import React from 'react';
 
-const WelcomeSection = () => {
+export default function WelcomeSection() {
+
+    const handleExploreProductsClick = () => {
+        window.location.href = '/products';
+    };
   return (
     <>
       <style>{`
@@ -115,19 +119,28 @@ const WelcomeSection = () => {
       `}</style>
 
       <div className="content-section">
-        <div className="welcome-section">
-          <p className="welcome-subtitle">
-            Your trusted partner in premium livestock nutrition. We provide high-quality feed 
-            solutions for poultry, fish, cattle, and other farm animals to ensure optimal 
-            health and productivity.
-          </p>
-          <button className="cta-button">
-            Explore Our Products
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <polyline points="9,18 15,12 9,6"></polyline>
-            </svg>
-          </button>
-        </div>
+              <div className="welcome-section">
+                  <p className="welcome-subtitle">
+                      Your trusted partner in premium livestock nutrition. We provide high-quality feed
+                      solutions for poultry, fish, cattle, and other farm animals to ensure optimal
+                      health and productivity.
+                  </p>
+                  <button
+                      className="cta-button"
+                      onClick={handleExploreProductsClick}
+                  >
+                      Explore Our Products
+                      <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                      >
+                          <polyline points="9,18 15,12 9,6"></polyline>
+                      </svg>
+                  </button>
+              </div>
 
         <div className="stats-grid">
           <div className="stat-card">
@@ -150,6 +163,4 @@ const WelcomeSection = () => {
       </div>
     </>
   );
-};
-
-export default WelcomeSection;
+}

@@ -12,8 +12,8 @@ const CartModal = ({
   onCheckout,
   getCartTotal 
 }) => {
-  if (!isOpen) return null;
-
+    if (!isOpen) return null;
+    console.log('Cart Items:', cartItems);
   const handleQuantityChange = (itemId, change) => {
     const item = cartItems.find(item => item.id === itemId);
     if (item) {
@@ -170,6 +170,9 @@ const CartModal = ({
           font-weight: 700;
           color: #059669;
           font-size: 1rem;
+          display: flex;
+          align-items: center;
+          gap: 4px; /* reduced spacing */
         }
 
         .quantity-controls {
@@ -177,6 +180,27 @@ const CartModal = ({
           align-items: center;
           gap: 8px;
           margin-right: 12px;
+        }
+
+        .original-price {
+          text-decoration: line-through;
+          color: #9ca3af;
+          font-size: 0.9rem;
+        }
+
+        .discounted-price {
+          font-weight: 700;
+          color: #dc2626; /* red */
+          font-size: 1rem;
+        }
+
+        .discount-badge {
+          background: #fee2e2;
+          color: #b91c1c;
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 2px 6px;
+          border-radius: 4px;
         }
 
         .quantity-btn {
@@ -389,11 +413,23 @@ const CartModal = ({
                     />
                   </div>
                   
-                  <div className="item-details">
-                    <div className="item-name">{item.name}</div>
-                    <div className="item-brand">{item.brand}</div>
-                    <div className="item-price">₹{item.price.toFixed(2)}</div>
-                  </div>
+                      <div className="item-details">
+                          <div className="item-name">{item.name}</div>
+                          <div className="item-brand">{item.brand}</div>
+
+                          {item.discount > 0 ? (
+                              <div className="item-price">
+                                  <span className="original-price">₹{item.price.toFixed(2)}</span>
+                                  <span className="item-pric">
+                                      ₹{(item.price * (1 - item.discount / 100)).toFixed(2)}
+                                  </span>
+                                  <span className="discount-badge">-{item.discount}%</span>
+                              </div>
+                          ) : (
+                              <div className="item-price">₹{item.price.toFixed(2)}</div>
+                          )}
+                      </div>
+
 
                   <div className="quantity-controls">
                     <button
