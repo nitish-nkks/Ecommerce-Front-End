@@ -1,6 +1,7 @@
 import React from 'react';
 import BannerCarousel from '../HomePage/BannerCarousel';
 import CategoriesSection from '../HomePage/CategoriesSection';
+import BrandMarquee from '../HomePage/BrandMarquee';
 import FeaturedProducts from '../HomePage/FeaturedProducts';
 import SpecialOffers from '../HomePage/SpecialOffers';
 import BestSellers from '../HomePage/BestSellers';
@@ -10,32 +11,39 @@ import WelcomeSection from '../HomePage/WelcomeSection';
 import FloatingButtons from '../HomePage/FloatingButtons';
 import '../HomePage/HomePage.css';
 
-const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCart }) => {
-  return (
-    <div className="w-full bg-white">
-      <BannerCarousel />
-      <CategoriesSection onCategoryClick={onCategoryClick} />
-      <FeaturedProducts 
-        wishlistItems={wishlistItems} 
-        onWishlistToggle={onWishlistToggle}
-        onAddToCart={onAddToCart}
-      />
-      <SpecialOffers />
-      <BestSellers 
-        wishlistItems={wishlistItems} 
-        onWishlistToggle={onWishlistToggle}
-        onAddToCart={onAddToCart}
-      />
-      <ProductCategoriesSection onCategoryClick={onCategoryClick} />
-      <NewProducts 
-        wishlistItems={wishlistItems} 
-        onWishlistToggle={onWishlistToggle}
-        onAddToCart={onAddToCart}
-      />
-      <WelcomeSection />
-      <FloatingButtons />
-    </div>
-  );
+const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
+    return (
+        <div className="w-full bg-white">
+            <BannerCarousel />
+            <CategoriesSection onCategoryClick={onCategoryClick} />
+            <BrandMarquee />
+            <FeaturedProducts
+                wishlistItems={wishlistItems}
+                onWishlistToggle={onWishlistToggle}
+                onAddToCart={onAddToCart}
+                cartItems={cartItems}
+                onNavigate={onNavigate}
+            />
+            <SpecialOffers
+                wishlistItems={wishlistItems}
+                onWishlistToggle={onWishlistToggle}
+                onAddToCart={onAddToCart}
+            />
+            <BestSellers
+                wishlistItems={wishlistItems}
+                onWishlistToggle={onWishlistToggle}
+                onAddToCart={onAddToCart}
+            />
+            <ProductCategoriesSection onCategoryClick={onCategoryClick} />
+            <NewProducts
+                wishlistItems={wishlistItems}
+                onWishlistToggle={onWishlistToggle}
+                onAddToCart={onAddToCart}
+            />
+            <WelcomeSection />
+            <FloatingButtons />
+        </div>
+    );
 };
 
 export default HomePage;

@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Heart } from 'lucide-react';
+import { getCategoriesWithProducts } from '../../api/api';
 
 const ProductCategoriesSection = () => {
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        getCategoriesWithProducts()
+            .then((res) => {
+                if (res.data.succeeded) {
+                    const mainCategories = res.data.data.map(c => ({
+                        categoryId: c.categoryId,
+                        categoryName: c.categoryName,
+                        products: c.products
+                    }));
+                    setCategories(mainCategories);
+                }
+            })
+            .catch((err) => {
+                console.error("Error fetching categories", err);
+            });
+    }, []);
+
   const scrollProducts = (containerId, direction) => {
     const container = document.getElementById(containerId);
     const isMobile = window.innerWidth <= 768;
@@ -13,7 +34,6 @@ const ProductCategoriesSection = () => {
       });
     }
   };
-
   return (
     <>
       <style>{`
@@ -226,6 +246,12 @@ const ProductCategoriesSection = () => {
           .product-name {
             font-size: 0.8rem;
           }
+
+          .product-nav {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+          }
         }
 
         @media (max-width: 480px) {
@@ -260,105 +286,55 @@ const ProductCategoriesSection = () => {
 
       <div className="product-categories-section">
         <div className="product-categories-container">
-          {/* Poultry Feeds */}
-          <div className="product-category-block">
+                    {categories.map((category) => (
+                        <div key={category.categoryId} className="product-category-block">
+                            {/* Category header */}
             <div className="product-category-header">
               <div className="product-category-image">
-                <img src="/src/assets/scb1.png" alt="Poultry Feeds" className="product-category-img" />
+                                    <img
+                                        src={category.products[0]?.image || "/src/assets/placeholder.png"}
+                                        alt={category.categoryName}
+                                        className="product-category-img"
+                                    />
                 <div className="product-category-overlay">
-                  <h3 className="product-category-title">Poultry Feeds</h3>
-                </div>
-              </div>
+                                        <h3 className="product-category-title">{category.categoryName}</h3>
             </div>
-            <div className="product-scroll-container">
-              <div className="product-scroll-wrapper" id="poultry-scroll">
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p1.png" alt="Nutrichoice Finisher Pellets" className="product-img" />
                   </div>
-                  <div className="product-info">
-                    <h4 className="product-name">NUTRICHOICE FINISHER PELLETS – 50 KG</h4>
                   </div>
-                </div>
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p2.png" alt="Super Vriddhi Finisher Crumbs" className="product-img" />
-                  </div>
-                  <div className="product-info">
-                    <h4 className="product-name">SUPER VRIDDHI FINISHER CRUMBS – 50 KG</h4>
-                  </div>
-                </div>
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p1.png" alt="Layer Feed Phase II" className="product-img" />
-                  </div>
-                  <div className="product-info">
-                    <h4 className="product-name">LAYER FEED PHASE II – 50 KG</h4>
-                  </div>
-                </div>
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p2.png" alt="Layer Feed Phase I" className="product-img" />
-                  </div>
-                  <div className="product-info">
-                    <h4 className="product-name">LAYER FEED PHASE I – 50 KG</h4>
-                  </div>
-                </div>
-              </div>
-              <button className="product-nav prev" onClick={() => scrollProducts('poultry-scroll', -1)}>‹</button>
-              <button className="product-nav next" onClick={() => scrollProducts('poultry-scroll', 1)}>›</button>
-            </div>
-          </div>
 
-          {/* Fish Feeds */}
-          <div className="product-category-block">
-            <div className="product-category-header">
-              <div className="product-category-image">
-                <img src="/src/assets/scb3.png" alt="Fish Feeds" className="product-category-img" />
-                <div className="product-category-overlay">
-                  <h3 className="product-category-title">Fish & Shrimp Feeds</h3>
-                </div>
-              </div>
-            </div>
+                            {/* Product scroll */}
             <div className="product-scroll-container">
-              <div className="product-scroll-wrapper" id="fish-scroll">
-                <div className="product-card">
+                                <div className="product-scroll-wrapper" id={`category-scroll-${category.categoryId}`}>
+                                    {category.products.map((product) => (
+                                        <div key={product.productId} className="product-card">
                   <div className="product-image">
-                    <img src="/src/assets/p3.png" alt="Sathi Sinking Fish Feed 18/3" className="product-img" />
+                                                <img
+                                                    src={product.image || "/src/assets/placeholder.png"}
+                                                    alt={product.productName}
+                                                    className="product-img"
+                                                />
                   </div>
                   <div className="product-info">
-                    <h4 className="product-name">SATHI SINKING FISH FEED 18/3 – 50 KG</h4>
+                                                <h4 className="product-name">{product.productName}</h4>
                   </div>
                 </div>
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p1.png" alt="Sathi Sinking Fish Feed 20/3" className="product-img" />
-                  </div>
-                  <div className="product-info">
-                    <h4 className="product-name">SATHI SINKING FISH FEED 20/3 – 50 KG</h4>
-                  </div>
-                </div>
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p2.png" alt="Anmol Premium Sinking Fish Feed" className="product-img" />
-                  </div>
-                  <div className="product-info">
-                    <h4 className="product-name">ANMOL PREMIUM SINKING FISH FEED – 50 KG</h4>
-                  </div>
-                </div>
-                <div className="product-card">
-                  <div className="product-image">
-                    <img src="/src/assets/p3.png" alt="Fishwell Powder" className="product-img" />
-                  </div>
-                  <div className="product-info">
-                    <h4 className="product-name">FISHWELL POWDER 38/5 – 10 KG</h4>
-                  </div>
-                </div>
+                                    ))}
               </div>
-              <button className="product-nav prev" onClick={() => scrollProducts('fish-scroll', -1)}>‹</button>
-              <button className="product-nav next" onClick={() => scrollProducts('fish-scroll', 1)}>›</button>
+                                <button
+                                    className="product-nav prev"
+                                    onClick={() => scrollProducts(`category-scroll-${category.categoryId}`, -1)}
+                                >
+                                    ‹
+                                </button>
+                                <button
+                                    className="product-nav next"
+                                    onClick={() => scrollProducts(`category-scroll-${category.categoryId}`, 1)}
+                                >
+                                    ›
+                                </button>
             </div>
           </div>
+                    ))}
         </div>
       </div>
     </>

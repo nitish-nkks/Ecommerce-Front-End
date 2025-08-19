@@ -241,7 +241,10 @@ function App() {
   };
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return cartItems.reduce((total, item) => {
+            const discountedPrice = item.price - (item.price * (item.discount || 0) / 100);
+            return total + (discountedPrice * item.quantity);
+        }, 0);
   };
 
   const getCartItemCount = () => {
@@ -327,7 +330,7 @@ function App() {
   };
 
   const renderCurrentView = () => {
-    switch(currentView) {
+        switch (currentView) {
       case 'login':
         return (
           <Login 
@@ -411,6 +414,8 @@ function App() {
           />
         );
       case 'search':
+                const urlParams = new URLSearchParams(window.location.search);
+                const searchQuery = urlParams.get('q') || '';
         return (
           <SearchResultsPage
             searchQuery={searchQuery}
@@ -438,6 +443,8 @@ function App() {
             wishlistItems={wishlistItems} 
             onWishlistToggle={handleWishlistToggle}
             onAddToCart={addToCart}
+                        cartItems={cartItems}
+                        onNavigate={handleNavigate}
           />
         );
     }
