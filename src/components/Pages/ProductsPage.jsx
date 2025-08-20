@@ -753,9 +753,10 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           gap: 8px;
         }
 
-        .products-grid {
+       .products-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(280px, auto));
+          justify-content: center; /* centers items if row not full */
           gap: 24px;
         }
 

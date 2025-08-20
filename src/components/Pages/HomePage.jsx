@@ -28,17 +28,23 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                cartItems={cartItems}
+                onNavigate={onNavigate}
             />
             <BestSellers
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                cartItems={cartItems}
+                onNavigate={onNavigate}
             />
             <ProductCategoriesSection onCategoryClick={onCategoryClick} />
             <NewProducts
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                cartItems={cartItems}
+                onNavigate={onNavigate}
             />
             <WelcomeSection />
             <FloatingButtons />
