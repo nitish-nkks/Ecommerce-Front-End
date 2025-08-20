@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
 import { getProducts } from '../../api/api';
 
@@ -17,8 +17,10 @@ const SpecialOffers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) =>
     };
 
     const handleAddToCart = (product) => {
+        const minQty = product.minOrderQuantity || 1;
+
         if (onAddToCart) {
-            onAddToCart(product);
+            onAddToCart(product, minQty);
 
             // Trigger animation from the clicked button
             const event = window.event || {};
@@ -43,10 +45,10 @@ const SpecialOffers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) =>
                         image: p.image || "/src/assets/placeholder.png",
                         price: p.price,
                         originalPrice: p.price,
-                        oldPrice: `Rs${p.price.toLocaleString()}`,
+                        oldPrice: `₹${p.price.toLocaleString()}`,
                         currentPrice:
                             p.discountPercentage > 0
-                                ? `Rs${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                                ? `₹${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
                                 : null,
                         discount: p.discountPercentage,
                         badge: p.discountPercentage > 0
@@ -54,6 +56,7 @@ const SpecialOffers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) =>
                         brand: null,
                         category: p.categoryName,
                         subcategory: null,
+                        minOrderQuantity: p.minOrderQuantity,
                     }));
 
                 setSpecialOfferProducts(mappedProducts);
@@ -591,7 +594,7 @@ const SpecialOffers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) =>
                                                     onClick={() => handleAddToCart(product)}
                                                     title="Add to Cart"
                                                 >
-                                                    🛒 ADD TO CART
+                                                   <ShoppingCart size={12} /> ADD TO CART
                                                 </button>
 
                                                     <button className="special-offers-btn special-offers-buy-now">🛍️ BUY NOW</button>

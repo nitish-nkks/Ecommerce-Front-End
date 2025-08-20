@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Heart, Eye, ShoppingCart, Filter, X, Star, ChevronDown, Search } from 'lucide-react';
 import ProductDetailsModal from './ProductDetailsModal';
+import { getParentCategories, getProducts } from '../../api/api';
 
 const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory = null, selectedSubcategory = null, onAddToCart, cartItems = [], onNavigate }) => {
   // Log props to debug
@@ -32,195 +33,277 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
   const [showFilters, setShowFilters] = useState(false);
 
   // Comprehensive product data
-  const allProducts = [
-    {
-      id: 1,
-      name: "AMOXIRUM TAB - Premium Antibiotic",
-      description: "High-quality antibiotic tablets for livestock. Effective against bacterial infections in poultry, cattle, and other farm animals.",
-      image: "/src/assets/scb1.png",
-      price: 159.50,
-      originalPrice: 200.48,
-      discount: 20,
-      category: "Medicine",
-      subcategory: "Antibiotics",
-      brand: "VetCare",
-      rating: 4.8,
-      reviews: 234,
-      stock: 45,
-      inStock: true,
-      features: ["Fast acting", "Broad spectrum", "Safe for all livestock", "Veterinary approved"],
-      specifications: {
-        "Active Ingredient": "Amoxicillin",
-        "Dosage": "500mg",
-        "Pack Size": "100 tablets",
-        "Shelf Life": "3 years"
-      }
-    },
-    {
-      id: 2,
-      name: "Calgophos - Calcium Supplement",
-      description: "Essential calcium and phosphorus supplement for strong bones and improved milk production in dairy animals.",
-      image: "/src/assets/scb2.png",
-      price: 2281.10,
-      originalPrice: 2820.00,
-      discount: 19,
-      category: "Supplements",
-      subcategory: "Minerals",
-      brand: "NutriVet",
-      rating: 4.9,
-      reviews: 156,
-      stock: 23,
-      inStock: true,
-      features: ["High calcium content", "Improved milk yield", "Strong bone development", "Easy absorption"],
-      specifications: {
-        "Calcium": "25%",
-        "Phosphorus": "12%",
-        "Weight": "1kg",
-        "Usage": "5g per animal daily"
-      }
-    },
-    {
-      id: 3,
-      name: "SOKRENA W.S. - Poultry Growth",
-      description: "Specialized water-soluble growth promoter for poultry. Enhances feed conversion and overall bird performance.",
-      image: "/src/assets/scb3.png",
-      price: 3854.92,
-      originalPrice: 4701.12,
-      discount: 18,
-      category: "Poultry",
-      subcategory: "Growth Promoters",
-      brand: "PoultryPro",
-      rating: 4.7,
-      reviews: 89,
-      stock: 34,
-      inStock: true,
-      features: ["Water soluble", "Growth enhancement", "Better FCR", "Natural ingredients"],
-      specifications: {
-        "Pack Size": "500g",
-        "Dosage": "1g per liter water",
-        "Duration": "7-14 days",
-        "Withdrawal": "3 days"
-      }
-    },
-    {
-      id: 4,
-      name: "Vimeral Forte - Multi-Vitamin",
-      description: "Complete vitamin and mineral supplement for all types of livestock. Boosts immunity and overall health.",
-      image: "/src/assets/scb4.png",
-      price: 688.00,
-      originalPrice: 800.00,
-      discount: 14,
-      category: "Supplements",
-      subcategory: "Vitamins",
-      brand: "VitalVet",
-      rating: 4.6,
-      reviews: 342,
-      stock: 67,
-      inStock: true,
-      features: ["Complete vitamin profile", "Immunity booster", "All livestock", "Premium quality"],
-      specifications: {
-        "Vitamin A": "50000 IU",
-        "Vitamin E": "500 IU",
-        "Pack Size": "500ml",
-        "Shelf Life": "2 years"
-      }
-    },
-    {
-      id: 5,
-      name: "Premium Fish Feed Pro",
-      description: "High-protein fish feed for optimal growth in aquaculture. Specially formulated for tropical fish farming.",
-      image: "/src/assets/p1.png",
-      price: 1250.00,
-      originalPrice: 1500.00,
-      discount: 17,
-      category: "Fish",
-      subcategory: "Feed",
-      brand: "AquaFeed",
-      rating: 4.8,
-      reviews: 78,
-      stock: 56,
-      inStock: true,
-      features: ["High protein", "Digestible", "Growth enhancement", "Color enhancement"],
-      specifications: {
-        "Protein": "32%",
-        "Fat": "6%",
-        "Fiber": "4%",
-        "Pellet Size": "2mm"
-      }
-    },
-    {
-      id: 6,
-      name: "Cattle Nutrition Plus Premium",
-      description: "Complete nutrition supplement for cattle. Improves milk production and overall cattle health significantly.",
-      image: "/src/assets/p2.png",
-      price: 2800.00,
-      originalPrice: 3200.00,
-      discount: 12,
-      category: "Cattle",
-      subcategory: "Feed Supplements",
-      brand: "CattleCare",
-      rating: 4.9,
-      reviews: 167,
-      stock: 29,
-      inStock: true,
-      features: ["Milk production boost", "Complete nutrition", "Easy mixing", "Cost effective"],
-      specifications: {
-        "Crude Protein": "18%",
-        "Fat": "3.5%",
-        "Fiber": "15%",
-        "Pack Size": "25kg"
-      }
-    },
-    {
-      id: 7,
-      name: "TC Powder - Broad Spectrum",
-      description: "Tetracycline-based broad spectrum antibiotic powder. Effective treatment for various bacterial infections.",
-      image: "/src/assets/scb1.png",
-      price: 77.10,
-      originalPrice: 99.23,
-      discount: 22,
-      category: "Medicine",
-      subcategory: "Antibiotics",
-      brand: "VetCare",
-      rating: 4.7,
-      reviews: 203,
-      stock: 78,
-      inStock: true,
-      features: ["Broad spectrum", "Fast relief", "Water soluble", "Veterinary grade"],
-      specifications: {
-        "Active Ingredient": "Tetracycline HCl",
-        "Concentration": "10%",
-        "Pack Size": "100g",
-        "Withdrawal": "7 days"
-      }
-    },
-    {
-      id: 8,
-      name: "E Care Se - Vitamin E Supplement",
-      description: "Vitamin E and Selenium supplement for reproductive health and immunity boost in all livestock animals.",
-      image: "/src/assets/scb2.png",
-      price: 288.82,
-      originalPrice: 563.00,
-      discount: 49,
-      category: "Supplements",
-      subcategory: "Vitamins",
-      brand: "VitalVet",
-      rating: 4.8,
-      reviews: 145,
-      stock: 34,
-      inStock: true,
-      features: ["Reproductive health", "Immunity boost", "Antioxidant", "All animals"],
-      specifications: {
-        "Vitamin E": "100 IU/ml",
-        "Selenium": "0.5mg/ml",
-        "Volume": "100ml",
-        "Route": "Injectable"
-      }
-    }
-  ];
+  //const allProducts = [
+  //  {
+  //    id: 1,
+  //    name: "AMOXIRUM TAB - Premium Antibiotic",
+  //    description: "High-quality antibiotic tablets for livestock. Effective against bacterial infections in poultry, cattle, and other farm animals.",
+  //    image: "/src/assets/scb1.png",
+  //    price: 159.50,
+  //    originalPrice: 200.48,
+  //    discount: 20,
+  //    category: "Medicine",
+  //    subcategory: "Antibiotics",
+  //    brand: "VetCare",
+  //    rating: 4.8,
+  //    reviews: 234,
+  //    stock: 45,
+  //    inStock: true,
+  //    features: ["Fast acting", "Broad spectrum", "Safe for all livestock", "Veterinary approved"],
+  //    specifications: {
+  //      "Active Ingredient": "Amoxicillin",
+  //      "Dosage": "500mg",
+  //      "Pack Size": "100 tablets",
+  //      "Shelf Life": "3 years"
+  //    }
+  //  },
+  //  {
+  //    id: 2,
+  //    name: "Calgophos - Calcium Supplement",
+  //    description: "Essential calcium and phosphorus supplement for strong bones and improved milk production in dairy animals.",
+  //    image: "/src/assets/scb2.png",
+  //    price: 2281.10,
+  //    originalPrice: 2820.00,
+  //    discount: 19,
+  //    category: "Supplements",
+  //    subcategory: "Minerals",
+  //    brand: "NutriVet",
+  //    rating: 4.9,
+  //    reviews: 156,
+  //    stock: 23,
+  //    inStock: true,
+  //    features: ["High calcium content", "Improved milk yield", "Strong bone development", "Easy absorption"],
+  //    specifications: {
+  //      "Calcium": "25%",
+  //      "Phosphorus": "12%",
+  //      "Weight": "1kg",
+  //      "Usage": "5g per animal daily"
+  //    }
+  //  },
+  //  {
+  //    id: 3,
+  //    name: "SOKRENA W.S. - Poultry Growth",
+  //    description: "Specialized water-soluble growth promoter for poultry. Enhances feed conversion and overall bird performance.",
+  //    image: "/src/assets/scb3.png",
+  //    price: 3854.92,
+  //    originalPrice: 4701.12,
+  //    discount: 18,
+  //    category: "Poultry",
+  //    subcategory: "Growth Promoters",
+  //    brand: "PoultryPro",
+  //    rating: 4.7,
+  //    reviews: 89,
+  //    stock: 34,
+  //    inStock: true,
+  //    features: ["Water soluble", "Growth enhancement", "Better FCR", "Natural ingredients"],
+  //    specifications: {
+  //      "Pack Size": "500g",
+  //      "Dosage": "1g per liter water",
+  //      "Duration": "7-14 days",
+  //      "Withdrawal": "3 days"
+  //    }
+  //  },
+  //  {
+  //    id: 4,
+  //    name: "Vimeral Forte - Multi-Vitamin",
+  //    description: "Complete vitamin and mineral supplement for all types of livestock. Boosts immunity and overall health.",
+  //    image: "/src/assets/scb4.png",
+  //    price: 688.00,
+  //    originalPrice: 800.00,
+  //    discount: 14,
+  //    category: "Supplements",
+  //    subcategory: "Vitamins",
+  //    brand: "VitalVet",
+  //    rating: 4.6,
+  //    reviews: 342,
+  //    stock: 67,
+  //    inStock: true,
+  //    features: ["Complete vitamin profile", "Immunity booster", "All livestock", "Premium quality"],
+  //    specifications: {
+  //      "Vitamin A": "50000 IU",
+  //      "Vitamin E": "500 IU",
+  //      "Pack Size": "500ml",
+  //      "Shelf Life": "2 years"
+  //    }
+  //  },
+  //  {
+  //    id: 5,
+  //    name: "Premium Fish Feed Pro",
+  //    description: "High-protein fish feed for optimal growth in aquaculture. Specially formulated for tropical fish farming.",
+  //    image: "/src/assets/p1.png",
+  //    price: 1250.00,
+  //    originalPrice: 1500.00,
+  //    discount: 17,
+  //    category: "Fish",
+  //    subcategory: "Feed",
+  //    brand: "AquaFeed",
+  //    rating: 4.8,
+  //    reviews: 78,
+  //    stock: 56,
+  //    inStock: true,
+  //    features: ["High protein", "Digestible", "Growth enhancement", "Color enhancement"],
+  //    specifications: {
+  //      "Protein": "32%",
+  //      "Fat": "6%",
+  //      "Fiber": "4%",
+  //      "Pellet Size": "2mm"
+  //    }
+  //  },
+  //  {
+  //    id: 6,
+  //    name: "Cattle Nutrition Plus Premium",
+  //    description: "Complete nutrition supplement for cattle. Improves milk production and overall cattle health significantly.",
+  //    image: "/src/assets/p2.png",
+  //    price: 2800.00,
+  //    originalPrice: 3200.00,
+  //    discount: 12,
+  //    category: "Cattle",
+  //    subcategory: "Feed Supplements",
+  //    brand: "CattleCare",
+  //    rating: 4.9,
+  //    reviews: 167,
+  //    stock: 29,
+  //    inStock: true,
+  //    features: ["Milk production boost", "Complete nutrition", "Easy mixing", "Cost effective"],
+  //    specifications: {
+  //      "Crude Protein": "18%",
+  //      "Fat": "3.5%",
+  //      "Fiber": "15%",
+  //      "Pack Size": "25kg"
+  //    }
+  //  },
+  //  {
+  //    id: 7,
+  //    name: "TC Powder - Broad Spectrum",
+  //    description: "Tetracycline-based broad spectrum antibiotic powder. Effective treatment for various bacterial infections.",
+  //    image: "/src/assets/scb1.png",
+  //    price: 77.10,
+  //    originalPrice: 99.23,
+  //    discount: 22,
+  //    category: "Medicine",
+  //    subcategory: "Antibiotics",
+  //    brand: "VetCare",
+  //    rating: 4.7,
+  //    reviews: 203,
+  //    stock: 78,
+  //    inStock: true,
+  //    features: ["Broad spectrum", "Fast relief", "Water soluble", "Veterinary grade"],
+  //    specifications: {
+  //      "Active Ingredient": "Tetracycline HCl",
+  //      "Concentration": "10%",
+  //      "Pack Size": "100g",
+  //      "Withdrawal": "7 days"
+  //    }
+  //  },
+  //  {
+  //    id: 8,
+  //    name: "E Care Se - Vitamin E Supplement",
+  //    description: "Vitamin E and Selenium supplement for reproductive health and immunity boost in all livestock animals.",
+  //    image: "/src/assets/scb2.png",
+  //    price: 288.82,
+  //    originalPrice: 563.00,
+  //    discount: 49,
+  //    category: "Supplements",
+  //    subcategory: "Vitamins",
+  //    brand: "VitalVet",
+  //    rating: 4.8,
+  //    reviews: 145,
+  //    stock: 34,
+  //    inStock: true,
+  //    features: ["Reproductive health", "Immunity boost", "Antioxidant", "All animals"],
+  //    specifications: {
+  //      "Vitamin E": "100 IU/ml",
+  //      "Selenium": "0.5mg/ml",
+  //      "Volume": "100ml",
+  //      "Route": "Injectable"
+  //    }
+  //  }
+  //];
 
-  const categories = ['Medicine', 'Supplements', 'Poultry', 'Fish', 'Cattle'];
-  const brands = ['VetCare', 'NutriVet', 'PoultryPro', 'VitalVet', 'AquaFeed', 'CattleCare'];
+    const [allProducts, setAllProducts] = useState([]);
+
+    useEffect(() => {
+        getProducts()
+            .then((res) => {
+                const products = res.data?.data || [];
+
+                const mappedProducts = products
+                    //.filter((p) => p.isBestSeller)
+                    .map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        description: p.description,
+                        image: p.image || "/src/assets/placeholder.png",
+                        price: p.price,
+                        originalPrice: p.price,
+                        oldPrice: `Rs${p.price.toLocaleString()}`,
+                        currentPrice:
+                            p.discountPercentage > 0
+                                ? `${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                                : null,
+                        discount: p.discountPercentage,
+                        category: p.categoryName,
+                        categortId: p.categoryId,
+                        stock: p.stockQuantity,
+                        inStock: p.stockQuantity > 0 ? true : false,
+                        minOrderQuantity: p.minOrderQuantity,
+                    }));
+
+                setAllProducts(mappedProducts);
+            })
+            .catch((err) => {
+                console.error("Error fetching products:", err);
+            });
+    }, []);
+
+  //const categories = ['Medicine', 'Supplements', 'Poultry', 'Fish', 'Cattle'];
+  //const brands = ['VetCare', 'NutriVet', 'PoultryPro', 'VitalVet', 'AquaFeed', 'CattleCare'];
+
+    const [categories, setCategories] = useState([]);
+
+    const buildCategoryTree = (categories) => {
+        if (!Array.isArray(categories)) return [];
+
+        // Step 1: create lookup map
+        const map = {};
+        categories.forEach((cat) => {
+            map[cat.id] = { ...cat, subCategories: [] };
+        });
+
+        // Step 2: build tree
+        const tree = [];
+        categories.forEach((cat) => {
+            if (cat.parentCategoryId) {
+                // attach child to parent
+                if (map[cat.parentCategoryId]) {
+                    map[cat.parentCategoryId].subCategories.push(map[cat.id]);
+                }
+            } else {
+                // top-level
+                tree.push(map[cat.id]);
+            }
+        });
+
+        return tree;
+    };
+
+    useEffect(() => {
+        getParentCategories()
+            .then((res) => {
+                console.log("API Response:", res.data);
+
+                // Handle API response safely
+                const rawCategories = Array.isArray(res.data)
+                    ? res.data
+                    : res.data?.data || [];
+
+                const categoryTree = buildCategoryTree(rawCategories);
+                setCategories(categoryTree);
+            })
+            .catch((err) => {
+                console.error("Error fetching categories:", err);
+            });
+    }, []);
 
   const isInWishlist = (productId) => {
     return wishlistItems.some(item => item.id === productId);
@@ -237,17 +320,31 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
     setShowModal(true);
   };
 
-  const handleAddToCart = (product) => {
+   
+  const handleAddToCart = (product) => {  
+    const minQty = product.minOrderQuantity || 1;        
     if (onAddToCart) {
-      onAddToCart(product, 1);
+        onAddToCart(product, minQty);
     }
   };
 
-  const handleQuantityChange = (product, change) => {
-    if (onAddToCart) {
-      onAddToCart(product, change);
+    const handleQuantityChange = (product, change) => {
+        const minQty = product.minOrderQuantity || 1;
+        const stockQty = product.stock;
+
+        const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+        const newQty = currentQty + change;
+
+        console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty);
+
+        if (newQty < minQty) return;
+        if (stockQty < newQty) return;
+
+        if (onAddToCart) {
+            onAddToCart(product, change);
+        }
     }
-  };
 
   const handleBuyNow = (product) => {
     // Add to cart first if not already added
@@ -364,6 +461,26 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
       return newFilters;
     });
   };
+
+    const renderCategoryOption = (category, level = 0) => {
+        return (
+            <div key={category.id} style={{ marginLeft: level * 16 }}>
+                <div
+                    className="filter-option cursor-pointer flex items-center gap-2"
+                    onClick={() => handleFilterChange('categories', category.name)}
+                >
+                    <div className={`checkbox ${selectedFilters.categories.includes(category.name) ? 'checked' : ''}`} />
+                    <span className="filter-label">{category.name}</span>
+                </div>
+
+                {category.subCategories?.length > 0 &&
+                    category.subCategories.map((subcat) =>
+                        renderCategoryOption(subcat, level + 1)
+                    )}
+            </div>
+        );
+    };
+
 
   return (
     <div className="products-page">
@@ -763,6 +880,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+          min-height: calc(1.3em * 2);
         }
 
         .product-brand {
@@ -780,7 +898,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
         }
 
         .current-price {
-          font-size: 1.2rem;
+          font-size: 1.1rem;
           font-weight: 700;
           color: #059669;
         }
@@ -789,6 +907,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           font-size: 0.9rem;
           color: #9ca3af;
           text-decoration: line-through;
+          margin-right: 8px;
         }
 
         .discount {
@@ -802,10 +921,16 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
 
         .stock-info {
           font-size: 0.85rem;
-          color: #059669;
           margin-bottom: 15px;
         }
 
+        .stock-info.in-stock {
+          color: #059669; /* green */
+        }
+
+        .stock-info.out-of-stock {
+          color: #dc2626; /* red */
+        }
         .product-buttons {
           display: flex;
           gap: 8px;
@@ -827,6 +952,12 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           gap: 4px;
           text-transform: uppercase;
           letter-spacing: 0.3px;
+        }
+
+        .cart-btn:disabled {
+          background-color: #d1d5db; /* gray */
+          cursor: not-allowed;
+          opacity: 0.6;
         }
 
         .cart-btn.add-to-cart {
@@ -1009,21 +1140,15 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           </div>
 
           {/* Category Filter */}
-          <div className="filter-section">
-            <h4 className="filter-section-title">Categories</h4>
-            <div className="filter-options">
-              {categories.map(category => (
-                <div
-                  key={category}
-                  className="filter-option"
-                  onClick={() => handleFilterChange('categories', category)}
-                >
-                  <div className={`checkbox ${selectedFilters.categories.includes(category) ? 'checked' : ''}`} />
-                  <span className="filter-label">{category}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                  <div className="filter-section">
+                      <h4 className="filter-section-title">Categories</h4>
+                      <div className="filter-options">
+                          {categories.map((category) =>
+                              renderCategoryOption(category)
+                          )}
+                      </div>
+                  </div>
+
 
           {/* Price Range Filter */}
           <div className="filter-section">
@@ -1059,21 +1184,21 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           </div>
 
           {/* Brand Filter */}
-          <div className="filter-section">
-            <h4 className="filter-section-title">Brands</h4>
-            <div className="filter-options">
-              {brands.map(brand => (
-                <div
-                  key={brand}
-                  className="filter-option"
-                  onClick={() => handleFilterChange('brands', brand)}
-                >
-                  <div className={`checkbox ${selectedFilters.brands.includes(brand) ? 'checked' : ''}`} />
-                  <span className="filter-label">{brand}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/*<div className="filter-section">*/}
+          {/*  <h4 className="filter-section-title">Brands</h4>*/}
+          {/*  <div className="filter-options">*/}
+          {/*    {brands.map(brand => (*/}
+          {/*      <div*/}
+          {/*        key={brand}*/}
+          {/*        className="filter-option"*/}
+          {/*        onClick={() => handleFilterChange('brands', brand)}*/}
+          {/*      >*/}
+          {/*        <div className={`checkbox ${selectedFilters.brands.includes(brand) ? 'checked' : ''}`} />*/}
+          {/*        <span className="filter-label">{brand}</span>*/}
+          {/*      </div>*/}
+          {/*    ))}*/}
+          {/*  </div>*/}
+          {/*</div>*/}
 
 
           {/* Stock Filter */}
@@ -1131,7 +1256,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                       }}
                     />
                     {product.discount > 0 && (
-                      <div className="product-badge">-{product.discount}%</div>
+                      <div className="product-badge">SALE</div>
                     )}
                     <div className="product-actions">
                       <button
@@ -1156,20 +1281,26 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                     <h3 className="product-name">{product.name}</h3>
                     
 
-                    <div className="product-price">
-                      <span className="current-price">₹{product.price.toFixed(2)}</span>
-                      {product.originalPrice && (
-                        <span className="original-price">₹{product.originalPrice.toFixed(2)}</span>
-                      )}
+                     <div className="product-price">
+                              {product.originalPrice && product.discount > 0 && (
+                                  <div className="price-block">
+                                      <span className="original-price">₹{product.originalPrice.toFixed(2)}</span>
+                                      <span className="current-price">₹{product.currentPrice}</span>
+                                  </div>
+                              )}
+
+                              {product.originalPrice && product.discount === 0 && (
+                                  <span className="current-price"> ₹{product.originalPrice.toFixed(2)}</span>
+                              )}      
+
                       {product.discount > 0 && (
                         <span className="discount">-{product.discount}%</span>
                       )}
                     </div>
 
-                    <div className="stock-info">
-                      {product.inStock ? `${product.stock} in stock` : 'Out of stock'}
-                    </div>
-
+                    <div className={`stock-info ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
+                        {product.inStock ? `${product.stock} in stock` : 'Out of stock'}
+                    </div>   
                     <div className="product-buttons">
                       {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (
                         <div className="quantity-selector">
@@ -1193,6 +1324,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                         <button 
                           className="cart-btn add-to-cart"
                           onClick={() => handleAddToCart(product)}
+                          disabled={!product.inStock}
                         >
                           <ShoppingCart size={14} />
                           Add to Cart
@@ -1201,6 +1333,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                       <button 
                         className="cart-btn buy-now"
                         onClick={() => handleBuyNow(product)}
+                        disabled={!product.inStock}
                       >
                         Buy Now
                       </button>
