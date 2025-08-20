@@ -13,11 +13,12 @@ import {
   Heart
 } from 'lucide-react';
 import { getProductSuggestions, getPopularSearches } from '../../data/globalProducts';
+import { getParentCategories } from '../../api/api';
 
-const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoinSellerClick, onCategoryClick, onWishlistClick, wishlistCount = 0, language, onLanguageChange, onCartClick, cartItemCount = 0, cartTotal = 0, onSearchSubmit, user, onLogout }) => {
+const Header = ({ onLoginClick, onNavigate, currentView, onCategoryClick, onWishlistClick, wishlistCount = 0, language, onCartClick, cartItemCount = 0, cartTotal = 0, onSearchSubmit, user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  //const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
@@ -30,63 +31,113 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
 
   const handleLogout = () => {
       onLogout();
-  };
+    };
 
-  const categories = [
-    { 
-      name: 'Medicine',
-      displayName: 'Medicine', 
-      subcategories: [
-        { name: 'Antibiotics', items: ['Broad Spectrum', 'Tetracycline', 'Amoxicillin'] },
-        { name: 'Vaccines', items: ['Poultry Vaccines', 'Cattle Vaccines', 'Fish Vaccines'] },
-        { name: 'Dewormers', items: ['Oral Dewormers', 'Injectable', 'Feed Additives'] }
-      ]
-    },
-    { 
-      name: 'Supplements',
-      displayName: 'Supplements', 
-      subcategories: [
-        { name: 'Vitamins', items: ['Vitamin E', 'Multivitamins', 'Mineral Mix'] },
-        { name: 'Minerals', items: ['Calcium', 'Phosphorus', 'Trace Minerals'] },
-        { name: 'Probiotics', items: ['Gut Health', 'Immunity Boosters', 'Growth Promoters'] }
-      ]
-    },
-    { 
-      name: 'Poultry',
-      displayName: 'Poultry Feed', 
-      subcategories: [
-        { name: 'Growth Promoters', items: ['Water Soluble', 'Feed Additives', 'Natural Enhancers'] },
-        { name: 'Broiler Feed', items: ['Starter Feed', 'Grower Feed', 'Finisher Feed'] },
-        { name: 'Layer Feed', items: ['Layer Starter', 'Layer Developer', 'Layer Producer'] }
-      ]
-    },
-    { 
-      name: 'Fish',
-      displayName: 'Fish Feed', 
-      subcategories: [
-        { name: 'Feed', items: ['High Protein', 'Growth Formula', 'Premium Quality'] },
-        { name: 'Aquaculture', items: ['Floating Feed', 'Sinking Feed', 'Specialty Feed'] },
-        { name: 'Supplements', items: ['Color Enhancers', 'Growth Boosters', 'Health Supplements'] }
-      ]
-    },
-    { 
-      name: 'Cattle',
-      displayName: 'Cattle Feed', 
-      subcategories: [
-        { name: 'Feed Supplements', items: ['Nutrition Plus', 'Milk Boosters', 'Weight Gainers'] },
-        { name: 'Mineral Mix', items: ['Calcium Rich', 'Complete Minerals', 'Trace Elements'] },
-        { name: 'Concentrates', items: ['High Energy', 'Protein Rich', 'Balanced Feed'] }
-      ]
-    }
-  ];
+    const [categories, setCategories] = useState([]);
 
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' }
-  ];
+    const buildCategoryTree = (categories) => {
+        if (!Array.isArray(categories)) return [];
+
+        // Step 1: create lookup map
+        const map = {};
+        categories.forEach((cat) => {
+            map[cat.id] = { ...cat, subCategories: [] };
+        });
+
+        // Step 2: build tree
+        const tree = [];
+        categories.forEach((cat) => {
+            if (cat.parentCategoryId) {
+                // attach child to parent
+                if (map[cat.parentCategoryId]) {
+                    map[cat.parentCategoryId].subCategories.push(map[cat.id]);
+                }
+            } else {
+                // top-level
+                tree.push(map[cat.id]);
+            }
+        });
+
+        return tree;
+    };
+
+    useEffect(() => {
+        getParentCategories()
+            .then((res) => {
+                console.log("API Response:", res.data);
+
+                // Handle API response safely
+                const rawCategories = Array.isArray(res.data)
+                    ? res.data
+                    : res.data?.data || [];
+
+                const categoryTree = buildCategoryTree(rawCategories);
+                setCategories(categoryTree);
+            })
+            .catch((err) => {
+                console.error("Error fetching categories:", err);
+            });
+    }, []);
+
+
+
+    console.log(categories);
+
+  //const categories = [
+  //  { 
+  //    name: 'Medicine',
+  //    displayName: 'Medicine', 
+  //    subcategories: [
+  //      { name: 'Antibiotics', items: ['Broad Spectrum', 'Tetracycline', 'Amoxicillin'] },
+  //      { name: 'Vaccines', items: ['Poultry Vaccines', 'Cattle Vaccines', 'Fish Vaccines'] },
+  //      { name: 'Dewormers', items: ['Oral Dewormers', 'Injectable', 'Feed Additives'] }
+  //    ]
+  //  },
+  //  { 
+  //    name: 'Supplements',
+  //    displayName: 'Supplements', 
+  //    subcategories: [
+  //      { name: 'Vitamins', items: ['Vitamin E', 'Multivitamins', 'Mineral Mix'] },
+  //      { name: 'Minerals', items: ['Calcium', 'Phosphorus', 'Trace Minerals'] },
+  //      { name: 'Probiotics', items: ['Gut Health', 'Immunity Boosters', 'Growth Promoters'] }
+  //    ]
+  //  },
+  //  { 
+  //    name: 'Poultry',
+  //    displayName: 'Poultry Feed', 
+  //    subcategories: [
+  //      { name: 'Growth Promoters', items: ['Water Soluble', 'Feed Additives', 'Natural Enhancers'] },
+  //      { name: 'Broiler Feed', items: ['Starter Feed', 'Grower Feed', 'Finisher Feed'] },
+  //      { name: 'Layer Feed', items: ['Layer Starter', 'Layer Developer', 'Layer Producer'] }
+  //    ]
+  //  },
+  //  { 
+  //    name: 'Fish',
+  //    displayName: 'Fish Feed', 
+  //    subcategories: [
+  //      { name: 'Feed', items: ['High Protein', 'Growth Formula', 'Premium Quality'] },
+  //      { name: 'Aquaculture', items: ['Floating Feed', 'Sinking Feed', 'Specialty Feed'] },
+  //      { name: 'Supplements', items: ['Color Enhancers', 'Growth Boosters', 'Health Supplements'] }
+  //    ]
+  //  },
+  //  { 
+  //    name: 'Cattle',
+  //    displayName: 'Cattle Feed', 
+  //    subcategories: [
+  //      { name: 'Feed Supplements', items: ['Nutrition Plus', 'Milk Boosters', 'Weight Gainers'] },
+  //      { name: 'Mineral Mix', items: ['Calcium Rich', 'Complete Minerals', 'Trace Elements'] },
+  //      { name: 'Concentrates', items: ['High Energy', 'Protein Rich', 'Balanced Feed'] }
+  //    ]
+  //  }
+  //];
+
+  //const languages = [
+  //  { code: 'en', name: 'English', flag: '🇺🇸' },
+  //  { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
+  //  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  //  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  //  { code: 'fr', name: 'Français', flag: '🇫🇷' }
+  //];
 
   const translations = {
     en: {
@@ -143,7 +194,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
   };
 
   const t = translations[language] || translations.en;
-  const currentLanguage = languages.find(lang => lang.code === language) || languages[0];
+  //const currentLanguage = languages.find(lang => lang.code === language) || languages[0];
 
   // Handle search suggestions
   useEffect(() => {
@@ -164,7 +215,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
         setIsCategoriesOpen(false);
       }
       if (languageRef.current && !languageRef.current.contains(event.target)) {
-        setIsLanguageOpen(false);
+        //setIsLanguageOpen(false);
       }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSearchSuggestions(false);
@@ -180,7 +231,7 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
   // Handle navigation with dropdown close
   const handleNavigate = (view) => {
     setIsCategoriesOpen(false);
-    setIsLanguageOpen(false);
+    //setIsLanguageOpen(false);
     onNavigate(view);
   };
 
@@ -315,11 +366,13 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           font-weight: 500;
         }
 
-        .top-bar-right {
+      .top-bar-right {
           display: flex;
-          align-items: center;
+          justify-content: flex-end; /* pushes items to the right */
+          align-items: center;       /* vertically center them */
           gap: 20px;
         }
+
 
         .top-bar-link {
           color: white;
@@ -737,6 +790,15 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
           color: #374151;
           margin-bottom: 6px;
           font-size: 0.875rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .subcategory-title:hover {
+          color: #12b431;
+          background: #f0fdf4;
+          padding-left: 16px;
+          transform: translateX(4px);
         }
 
         .subcategory-items {
@@ -1126,7 +1188,8 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
       {/* Top Bar */}
       <div className="top-bar">
         <div className="top-bar-content">
-          <div className="top-bar-left">
+          <div></div>
+          <div className="top-bar-right">
             <div className="top-bar-item">
               <Truck size={16} />
               <span>{t.freeShipping}</span>
@@ -1136,37 +1199,37 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
               <span>{t.helpline}</span>
             </div>
           </div>
-          <div className="top-bar-right">
+          {/*<div className="top-bar-right">*/}
            
-            <span className="top-bar-link" onClick={onJoinSellerClick}>{t.joinSeller}</span>
-            <div className="language-dropdown" ref={languageRef}>
-              <button 
-                className="language-btn"
-                onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-              >
-                <Globe size={16} />
-                <span>{currentLanguage.name}</span>
-                <ChevronDown size={14} />
-              </button>
-              {isLanguageOpen && (
-                <div className="language-dropdown-content">
-                  {languages.map((lang) => (
-                    <div
-                      key={lang.code}
-                      className={`language-item ${language === lang.code ? 'active' : ''}`}
-                      onClick={() => {
-                        onLanguageChange(lang.code);
-                        setIsLanguageOpen(false);
-                      }}
-                    >
-                      <span>{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+            {/*<span className="top-bar-link" onClick={onJoinSellerClick}>{t.joinSeller}</span>*/}
+            {/*<div className="language-dropdown" ref={languageRef}>*/}
+            {/*  <button */}
+            {/*    className="language-btn"*/}
+            {/*    onClick={() => setIsLanguageOpen(!isLanguageOpen)}*/}
+            {/*  >*/}
+            {/*    <Globe size={16} />*/}
+            {/*    <span>{currentLanguage.name}</span>*/}
+            {/*    <ChevronDown size={14} />*/}
+            {/*  </button>*/}
+            {/*  {isLanguageOpen && (*/}
+            {/*    <div className="language-dropdown-content">*/}
+            {/*      {languages.map((lang) => (*/}
+            {/*        <div*/}
+            {/*          key={lang.code}*/}
+            {/*          className={`language-item ${language === lang.code ? 'active' : ''}`}*/}
+            {/*          onClick={() => {*/}
+            {/*            onLanguageChange(lang.code);*/}
+            {/*            setIsLanguageOpen(false);*/}
+            {/*          }}*/}
+            {/*        >*/}
+            {/*          <span>{lang.flag}</span>*/}
+            {/*          <span>{lang.name}</span>*/}
+            {/*        </div>*/}
+            {/*      ))}*/}
+            {/*    </div>*/}
+            {/*  )}*/}
+            {/*</div>*/}
+          {/*</div>*/}
         </div>
       </div>
 
@@ -1268,92 +1331,110 @@ const Header = ({ onLoginClick, onRegisterClick, onNavigate, currentView, onJoin
       <div className="nav-bar">
         <div className="nav-content">
           <div className="nav-menu">
-            <div className="categories-dropdown" ref={categoriesRef}>
-              <div className="categories-btn-container">
-                <button 
-                  className="categories-btn main-btn"
-                  onClick={handleAllCategoriesClick}
-                >
-                  <Menu size={18} />
-                  {t.allCategories}
-                </button>
-                <button 
-                  className="categories-btn dropdown-btn"
-                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                >
-                  <ChevronDown size={16} />
-                </button>
-              </div>
-              {isCategoriesOpen && (
-                <div className="categories-dropdown-content">
-                  {categories.map((category, index) => (
-                    <div key={index} className="category-section">
-                      <div 
-                        className="category-title"
-                        onClick={() => handleCategoryClick(category)}
-                      >
-                        {category.displayName || category.name}
-                      </div>
-                      {category.subcategories.map((subcategory, subIndex) => (
-                        <div key={subIndex} className="subcategory-group">
-                          <div className="subcategory-title">{subcategory.name}</div>
-                          <ul className="subcategory-items">
-                            {subcategory.items.map((item, itemIndex) => (
-                              <li 
-                                key={itemIndex} 
-                                className="subcategory-item"
-                                onClick={() => handleSubcategoryItemClick(category, subcategory, item)}
+                      <div className="categories-dropdown" ref={categoriesRef}>
+                          <div className="categories-btn-container">
+                              <button
+                                  className="categories-btn main-btn"
+                                  onClick={handleAllCategoriesClick}
                               >
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                                  <Menu size={18} />
+                                  {t.allCategories}
+                              </button>
+                              <button
+                                  className="categories-btn dropdown-btn"
+                                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                              >
+                                  <ChevronDown size={16} />
+                              </button>
+                          </div>
 
-            <div className="nav-links">
-              <button 
-                className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
-                onClick={() => handleNavigate('home')}
-              >
-                {t.home}
-              </button>
-              <button 
-                className={`nav-link ${currentView === 'blogs' ? 'active' : ''}`}
-                onClick={() => handleNavigate('blogs')}
-              >
-                {t.blogs}
-              </button>
-              <button 
-                className={`nav-link ${currentView === 'technical' ? 'active' : ''}`}
-                onClick={() => handleNavigate('technical')}
-              >
-                {t.technicalGuidance}
-              </button>
-              <button 
-                className={`nav-link ${currentView === 'about' ? 'active' : ''}`}
-                onClick={() => handleNavigate('about')}
-              >
-                {t.aboutUs}
-              </button>
-              <button 
-                className={`nav-link ${currentView === 'flashsale' ? 'active' : ''}`}
-                onClick={() => handleNavigate('flashsale')}
-              >
-                {t.flashSale}
-              </button>
-              <button 
-                className={`nav-link ${currentView === 'contact' ? 'active' : ''}`}
-                onClick={() => handleNavigate('contact')}
-              >
-                {t.contactUs}
-              </button>
-            </div>
+                          {isCategoriesOpen && (
+                              <div className="categories-dropdown-content">
+                                  {categories?.map((category) => (
+                                      <div key={category.id} className="category-section">
+                                          <div
+                                              className="category-title"
+                                              onClick={() => handleCategoryClick(category)}
+                                          >
+                                              {category.name}
+                                          </div>
+
+                                          {category.subCategories?.length > 0 && (
+                                              <div className="subcategory-group">
+                                                  {category.subCategories.map((subcat) => (
+                                                      <div key={subcat.id} className="subcategory-section">
+                                                          {/* Pass the subcategory as well */}
+                                                          <ul
+                                                              className="subcategory-title cursor-pointer"
+                                                              onClick={() => handleSubcategoryItemClick(category, subcat)}
+                                                          >
+                                                              {subcat.name}
+                                                          </ul>
+
+                                                          {subcat.subCategories?.length > 0 && (
+                                                              <ul className="subcategory-items">
+                                                                  {subcat.subCategories.map((subsubcat) => (
+                                                                      <li
+                                                                          key={subsubcat.id}
+                                                                          className="subcategory-item cursor-pointer"
+                                                                          onClick={() =>
+                                                                              handleSubcategoryItemClick(category, subcat, subsubcat)
+                                                                          }
+                                                                      >
+                                                                          {subsubcat.name}
+                                                                      </li>
+                                                                  ))}
+                                                              </ul>
+                                                          )}
+                                                      </div>
+                                                  ))}
+                                              </div>
+                                          )}
+
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
+                      </div>
+
+                      <div className="nav-links">
+                          <button
+                              className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
+                              onClick={() => handleNavigate('home')}
+                          >
+                              {t.home}
+                          </button>
+                          <button
+                              className={`nav-link ${currentView === 'blogs' ? 'active' : ''}`}
+                              onClick={() => handleNavigate('blogs')}
+                          >
+                              {t.blogs}
+                          </button>
+                          <button
+                              className={`nav-link ${currentView === 'technical' ? 'active' : ''}`}
+                              onClick={() => handleNavigate('technical')}
+                          >
+                              {t.technicalGuidance}
+                          </button>
+                          <button
+                              className={`nav-link ${currentView === 'about' ? 'active' : ''}`}
+                              onClick={() => handleNavigate('about')}
+                          >
+                              {t.aboutUs}
+                          </button>
+                          <button
+                              className={`nav-link ${currentView === 'flashsale' ? 'active' : ''}`}
+                              onClick={() => handleNavigate('flashsale')}
+                          >
+                              {t.flashSale}
+                          </button>
+                          <button
+                              className={`nav-link ${currentView === 'contact' ? 'active' : ''}`}
+                              onClick={() => handleNavigate('contact')}
+                          >
+                              {t.contactUs}
+                          </button>
+                      </div>
           </div>
 
           <button 

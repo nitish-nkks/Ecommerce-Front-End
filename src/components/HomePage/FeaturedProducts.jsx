@@ -22,7 +22,7 @@ const FeaturedProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart, c
 
   const handleBuyNow = (product) => {
       // Add to cart first if not already added
-      const isLoggedIn = !!localStorage.getItem("authToken"); 
+      const isLoggedIn = !!localStorage.getItem("token"); 
       if (!isLoggedIn) {
           setOpen(true); // ⛔ show login modal
           console.log('LoggedIn', isLoggedIn);
