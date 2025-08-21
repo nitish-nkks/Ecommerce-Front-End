@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
 import { getProducts } from '../../api/api';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
-const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
+const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
   const [bestSellingSlide, setBestSellingSlide] = useState(0);
 
   const isInWishlist = (productId) => {
@@ -14,11 +15,61 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
     if (onWishlistToggle) {
       onWishlistToggle(product);
     }
-  };
+    };
+
+    const [open, setOpen] = useState(false);
+    const handleClose = () => setOpen(false);
+
+    const handleBuyNow = (product) => {
+        // Add to cart first if not already added
+        const isLoggedIn = !!localStorage.getItem("token");
+        console.log('LoggedIn', isLoggedIn);
+        if (!isLoggedIn) {
+            setOpen(true); // ⛔ show login modal
+            console.log('LoggedIn', isLoggedIn);
+            if (!getItemInCart(product.id)) {
+                console.log("Product not in cart, adding to cart first:", product);
+                handleAddToCart(product);
+            }
+            return;
+        }
+
+        console.log(onNavigate);
+        if (onNavigate) {
+            console.log('onNavigate', onNavigate);
+            onNavigate('checkout');
+        }
+    };
+
+    const handleQuantityChange = (product, change) => {
+        const minQty = product.minOrderQuantity || 1;
+        const stockQty = product.stock;
+
+        const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+        const newQty = currentQty + change;
+
+        console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty);
+
+        if (newQty < minQty) return;
+        if (stockQty < newQty) return;
+
+        if (onAddToCart) {
+            onAddToCart(product, change);
+        }
+    };
+
+    const getItemInCart = (productId) => {
+        console.log("cartItems: ", cartItems);
+        console.log("productId: ", productId);
+        return cartItems.find(item => item.id === productId);
+    };
 
   const handleAddToCart = (product) => {
-    if (onAddToCart) {
-      onAddToCart(product);
+    const minQty = product.minOrderQuantity || 1;
+
+      if (onAddToCart) {
+          onAddToCart(product, minQty);
       
       // Trigger animation from the clicked button
       const event = window.event || {};
@@ -43,10 +94,10 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
                         image: p.image || "/src/assets/placeholder.png",
                         price: p.price,
                         originalPrice: p.price,
-                        oldPrice: `Rs${p.price.toLocaleString()}`,
+                        oldPrice: `₹${p.price.toLocaleString()}`,
                         currentPrice:
                             p.discountPercentage > 0
-                                ? `Rs${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                                ? `₹${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
                                 : null,
                         discount: p.discountPercentage,
                         badge: p.isBestSeller
@@ -55,6 +106,9 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
                         brand: null,
                         category: p.categoryName,
                         subcategory: null,
+                        stock: p.stockQuantity,
+                        minOrderQuantity: p.minOrderQuantity,
+                        inStock: p.stockQuantity > 0 ? true : false
                     }));
 
                 setBestSellingProducts(mappedProducts);
@@ -429,6 +483,73 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
           background: #2563eb;
           transform: translateY(-1px);
         }
+        
+         .best-selling-btn:disabled {
+          background-color: #374151; /* gray */
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        .quantity-selector {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border: 1px solid #d1d5db;
+          border-radius: 7px;   /* match Add to Cart */
+          overflow: hidden;
+          height: 32px;         /* same height as Add to Cart */
+          background: #fff;
+           min-width: 120px;
+        }
+
+        .quantity-btn {
+          width: 32px;          /* square buttons */
+          height: 100%;         /* matches parent height */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 600;
+          background: #f3f4f6;  /* keep old color */
+          color: #374151;
+        }
+      
+        .quantity-display {
+          min-width: 36px;      /* consistent width */
+          text-align: center;
+          font-size: 0.82rem;   /* match Add to Cart font size */
+          font-weight: 600;
+          color: #1f2937;
+          user-select: none;
+        }
+          .quantity-btn:hover {
+          background: #e5e7eb;
+          border-color: #9ca3af;
+        }
+
+        .quantity-btn.decrease {
+          background: #fef2f2;
+          border-color: #fecaca;
+          color: #dc2626;
+        }
+
+        .quantity-btn.decrease:hover {
+          background: #fee2e2;
+          border-color: #fca5a5;
+        }
+
+        .quantity-btn.increase {
+          background: #f0fdf4;
+          border-color: #bbf7d0;
+          color: #059669;
+        }
+
+        .quantity-btn.increase:hover {
+          background: #dcfce7;
+          border-color: #86efac;
+        }
 
         .best-selling-nav {
           position: absolute;
@@ -555,14 +676,42 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
                       )}
                     </div>
                     <div className="best-selling-product-buttons">
-                      <button 
-                        className="best-selling-btn best-selling-add-cart"
-                        onClick={() => handleAddToCart(product)}
-                        title="Add to Cart"
-                      >
-                        🛒 ADD TO CART
-                      </button>
-                      <button className="best-selling-btn best-selling-buy-now">🛍️ BUY NOW</button>
+                      {/*<button */}
+                      {/*  className="best-selling-btn best-selling-add-cart"*/}
+                      {/*  onClick={() => handleAddToCart(product)}*/}
+                      {/*  title="Add to Cart"*/}
+                      {/*>*/}
+                      {/*  <ShoppingCart size={12} /> ADD TO CART*/}
+                              {/*</button>*/}
+                              {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (
+                                  <div className="quantity-selector">
+                                      <button
+                                          className="quantity-btn decrease"
+                                          onClick={() => handleQuantityChange(product, -1)}
+                                      >
+                                          -
+                                      </button>
+                                      <span className="quantity-display">
+                                          {getItemInCart(product.id).quantity}
+                                      </span>
+                                      <button
+                                          className="quantity-btn increase"
+                                          onClick={() => handleQuantityChange(product, 1)}
+                                      >
+                                          +
+                                      </button>
+                                  </div>
+                              ) : (
+                                  <button
+                                      className="best-selling-btn best-selling-add-cart"
+                                      onClick={() => handleAddToCart(product)}
+                                      disabled={!product.inStock}
+                                  >
+                                      <ShoppingCart size={14} />
+                                      Add to Cart
+                                  </button>
+                              )}           
+                              <button className="best-selling-btn best-selling-buy-now" onClick={() => handleBuyNow(product)} disabled={!product.inStock}>🛍️ BUY NOW</button>
                     </div>
                   </div>
                 </div>
@@ -578,6 +727,25 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart }) => {
           </div>
         </div>
       </div>
+          {/* Custom Login Required Modal */}
+          <Dialog open={open} onClose={handleClose}>
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogContent>
+                  Login is required to proceed with buying this product.
+              </DialogContent>
+              <DialogActions>
+                  <Button onClick={handleClose}>Cancel</Button>
+                  <button
+                      className="new-btn new-add-cart"
+                      onClick={() => {
+                          setOpen(false);
+                          onNavigate && onNavigate("login");
+                      }}
+                  >
+                      🔑 LOGIN
+                  </button>
+              </DialogActions>
+          </Dialog>
     </>
   );
 };

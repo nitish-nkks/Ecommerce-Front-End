@@ -27,6 +27,8 @@ export const getProducts = () => axiosInstance.get('/Products');
 
 export const getCategoriesWithProducts = () => axiosInstance.get('/Categories/categories-with-products');
 
+export const getParentCategories = () => axiosInstance.get('/Categories/list');
+
 //dummy
 export const addToCart = (data) => {
   return axiosInstance.post("/CartItem", data);
