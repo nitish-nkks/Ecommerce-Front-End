@@ -385,119 +385,260 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
   };
 
   // Filter and sort products
-  const filteredAndSortedProducts = useMemo(() => {
-    console.log('Filtering products with:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
-    let filtered = allProducts;
+  //const filteredAndSortedProducts = useMemo(() => {
+  //  console.log('Filtering products with:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
+  //  let filtered = allProducts;
 
-    // Apply category filter if coming from navigation
-    if (selectedCategory) {
-      console.log('Applying category filter:', selectedCategory);
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(product => 
-        product.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-      console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
-    }
+  //  // Apply category filter if coming from navigation
+  //  if (selectedCategory) {
+  //    console.log('Applying category filter:', selectedCategory);
+  //    const beforeFilter = filtered.length;
+  //    filtered = filtered.filter(product =>
+  //      product.category.toLowerCase() === selectedCategory.toLowerCase()
+  //    );
+  //    console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
+  //  }
 
-    if (selectedSubcategory) {
-      console.log('Applying subcategory filter:', selectedSubcategory);
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(product => 
-        product.subcategory.toLowerCase() === selectedSubcategory.toLowerCase()
-      );
-      console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
-    }
+  //  if (selectedSubcategory) {
+  //    console.log('Applying subcategory filter:', selectedSubcategory);
+  //    const beforeFilter = filtered.length;
+  //    filtered = filtered.filter(product =>
+  //      product.subcategory.toLowerCase() === selectedSubcategory.toLowerCase()
+  //    );
+  //    console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
+  //  }
 
-      if (selectedSubsubcategory) {
-          console.log('Applying subsubcategory filter:', selectedSubsubcategory);
-          const beforeFilter = filtered.length;
-          filtered = filtered.filter(product =>
-              product.subsubcategory.toLowerCase() === selectedSubsubcategory.toLowerCase()
-          );
-          console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
-      }
+  //    if (selectedSubsubcategory) {
+  //        console.log('Applying subsubcategory filter:', selectedSubsubcategory);
+  //        const beforeFilter = filtered.length;
+  //        filtered = filtered.filter(product =>
+  //            product.subsubcategory.toLowerCase() === selectedSubsubcategory.toLowerCase()
+  //        );
+  //        console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
+  //    }
 
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  //  // Apply search filter
+  //  if (searchTerm) {
+  //    filtered = filtered.filter(product =>
+  //      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //      product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  //    );
+  //  }
 
-    // Apply category filters
-    if (selectedFilters.categories.length > 0) {
-      filtered = filtered.filter(product => 
-        selectedFilters.categories.includes(product.category)
-      );
-    }
+  //  // Apply category filters
+  //  if (selectedFilters.categories.length > 0) {
+  //    filtered = filtered.filter(product =>
+  //      selectedFilters.categories.includes(product.category)
+  //    );
+  //  }
 
-    // Apply brand filters
-    if (selectedFilters.brands.length > 0) {
-      filtered = filtered.filter(product => 
-        selectedFilters.brands.includes(product.brand)
-      );
-    }
+  //  // Apply brand filters
+  //  if (selectedFilters.brands.length > 0) {
+  //    filtered = filtered.filter(product =>
+  //      selectedFilters.brands.includes(product.brand)
+  //    );
+  //  }
 
-    // Apply price range filter
-    filtered = filtered.filter(product => 
-      product.price >= selectedFilters.priceRange[0] && 
-      product.price <= selectedFilters.priceRange[1]
-    );
+  //  // Apply price range filter
+  //  filtered = filtered.filter(product =>
+  //    product.price >= selectedFilters.priceRange[0] &&
+  //    product.price <= selectedFilters.priceRange[1]
+  //  );
 
 
-    // Apply stock filter
-    if (selectedFilters.inStock) {
-      filtered = filtered.filter(product => product.inStock);
-    }
+  //  // Apply stock filter
+  //  if (selectedFilters.inStock) {
+  //    filtered = filtered.filter(product => product.inStock);
+  //  }
 
-    // Sort products
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'price_low':
-          return a.price - b.price;
-        case 'price_high':
-          return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'discount':
-          return b.discount - a.discount;
-        default:
-          return a.name.localeCompare(b.name);
-      }
-    });
+  //  // Sort products
+  //  filtered.sort((a, b) => {
+  //    switch (sortBy) {
+  //      case 'price_low':
+  //        return a.price - b.price;
+  //      case 'price_high':
+  //        return b.price - a.price;
+  //      case 'rating':
+  //        return b.rating - a.rating;
+  //      case 'discount':
+  //        return b.discount - a.discount;
+  //      default:
+  //        return a.name.localeCompare(b.name);
+  //    }
+  //  });
 
-    return filtered;
-  }, [allProducts, selectedFilters, sortBy, searchTerm, selectedCategory, selectedSubcategory, selectedSubsubcategory ]);
+  //  return filtered;
+  //}, [allProducts, selectedFilters, sortBy, searchTerm, selectedCategory, selectedSubcategory, selectedSubsubcategory ]);
 
-  const handleFilterChange = (filterType, value) => {
-    setSelectedFilters(prev => {
-      const newFilters = { ...prev };
-      
-      if (filterType === 'categories' || filterType === 'brands') {
-        const currentArray = newFilters[filterType];
-        if (currentArray.includes(value)) {
-          newFilters[filterType] = currentArray.filter(item => item !== value);
-        } else {
-          newFilters[filterType] = [...currentArray, value];
+    const filteredAndSortedProducts = useMemo(() => {
+        let filtered = allProducts;
+
+        // ✅ Apply navigation-based category filter (single selection) 
+        // only if no multiple filters are selected
+        if (selectedFilters.categories.length === 0) {
+            if (selectedCategory) {
+                filtered = filtered.filter(product =>
+                    product.category.toLowerCase() === selectedCategory.toLowerCase()
+                );
+            }
+
+            if (selectedSubcategory) {
+                filtered = filtered.filter(product =>
+                    product.subcategory.toLowerCase() === selectedSubcategory.toLowerCase()
+                );
+            }
+
+            if (selectedSubsubcategory) {
+                filtered = filtered.filter(product =>
+                    product.subsubcategory.toLowerCase() === selectedSubsubcategory.toLowerCase()
+                );
+            }
         }
-      } else if (filterType === 'priceRange') {
-        newFilters.priceRange = value;
-      } else if (filterType === 'inStock') {
-        newFilters.inStock = !newFilters.inStock;
-      }
-      
-      return newFilters;
-    });
-  };
+
+        // ✅ Apply search filter
+        if (searchTerm) {
+            filtered = filtered.filter(product =>
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // ✅ Apply multi-select category/subcategory filter
+        if (selectedFilters.categories.length > 0) {
+            filtered = filtered.filter(product =>
+                selectedFilters.categories.includes(product.category) ||
+                selectedFilters.categories.includes(product.subcategory) ||
+                selectedFilters.categories.includes(product.subsubcategory)
+            );
+        }
+
+        // ✅ Apply brand filters
+        if (selectedFilters.brands.length > 0) {
+            filtered = filtered.filter(product =>
+                selectedFilters.brands.includes(product.brand)
+            );
+        }
+
+        // ✅ Apply price range filter
+        filtered = filtered.filter(product =>
+            product.price >= selectedFilters.priceRange[0] &&
+            product.price <= selectedFilters.priceRange[1]
+        );
+
+        // ✅ Apply stock filter
+        if (selectedFilters.inStock) {
+            filtered = filtered.filter(product => product.inStock);
+        }
+
+        // ✅ Sorting
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'price_low':
+                    return a.price - b.price;
+                case 'price_high':
+                    return b.price - a.price;
+                case 'rating':
+                    return b.rating - a.rating;
+                case 'discount':
+                    return b.discount - a.discount;
+                default:
+                    return a.name.localeCompare(b.name);
+            }
+        });
+
+        return filtered;
+    }, [allProducts, selectedFilters, sortBy, searchTerm, selectedCategory, selectedSubcategory, selectedSubsubcategory]);
+
+  //const handleFilterChange = (filterType, value) => {
+  //  setSelectedFilters(prev => {
+  //    const newFilters = { ...prev };
+
+  //    if (filterType === 'categories' || filterType === 'brands') {
+  //      const currentArray = newFilters[filterType];
+  //      if (currentArray.includes(value)) {
+  //        newFilters[filterType] = currentArray.filter(item => item !== value);
+  //      } else {
+  //        newFilters[filterType] = [...currentArray, value];
+  //      }
+  //    } else if (filterType === 'priceRange') {
+  //      newFilters.priceRange = value;
+  //    } else if (filterType === 'inStock') {
+  //      newFilters.inStock = !newFilters.inStock;
+  //    }
+
+  //    return newFilters;
+  //  });
+  //};
+
+    const handleFilterChange = (filterType, value, category = null) => {
+        setSelectedFilters(prev => {
+            const newFilters = { ...prev };
+            console.log('handleFilterChange called with:', { filterType, value, category });
+            if (filterType === 'categories') {
+                let currentArray = newFilters.categories;
+
+                // If user clicked a main category (with subCategories)
+                if (category?.subCategories?.length > 0) {
+                    const subNames = getAllSubCategoryNames(category);
+
+                    if (currentArray.includes(value)) {
+                        // If already selected → deselect parent + all subs
+                        newFilters.categories = currentArray.filter(
+                            item => item !== value && !subNames.includes(item)
+                        );
+                    } else {
+                        // Select parent + all subs
+                        newFilters.categories = [...currentArray, value, ...subNames];
+                    }
+                } else {
+                    // Normal toggle (for leaf/sub categories)
+                    if (currentArray.includes(value)) {
+                        newFilters.categories = currentArray.filter(item => item !== value);
+                    } else {
+                        newFilters.categories = [...currentArray, value];
+                    }
+                }
+            }
+            else if (filterType === 'brands') {
+                const currentArray = newFilters.brands;
+                if (currentArray.includes(value)) {
+                    newFilters.brands = currentArray.filter(item => item !== value);
+                } else {
+                    newFilters.brands = [...currentArray, value];
+                }
+            }
+            else if (filterType === 'priceRange') {
+                newFilters.priceRange = value;
+            }
+            else if (filterType === 'inStock') {
+                newFilters.inStock = !newFilters.inStock;
+            }
+            console.log('Updated filters:', newFilters);
+            return newFilters;
+        });
+    };
+
+    // Helper: recursively collect all subcategory names
+    const getAllSubCategoryNames = (category) => {
+        let names = [];
+        if (category.subCategories) {
+            for (let sub of category.subCategories) {
+                names.push(sub.name);
+                names = [...names, ...getAllSubCategoryNames(sub)];
+            }
+        }
+        return names;
+    };
+
 
     const renderCategoryOption = (category, level = 0) => {
         return (
             <div key={category.id} style={{ marginLeft: level * 16 }}>
                 <div
                     className="filter-option cursor-pointer flex items-center gap-2"
-                    onClick={() => handleFilterChange('categories', category.name)}
+                    onClick={() => handleFilterChange('categories', category.name, category)}
                 >
                     <div className={`checkbox ${selectedFilters.categories.includes(category.name) ? 'checked' : ''}`} />
                     <span className="filter-label">{category.name}</span>
