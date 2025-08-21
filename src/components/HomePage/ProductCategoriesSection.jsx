@@ -4,16 +4,46 @@ import { getCategoriesWithProducts } from '../../api/api';
 
 const ProductCategoriesSection = () => {
     const [categories, setCategories] = useState([]);
-
     useEffect(() => {
         getCategoriesWithProducts()
             .then((res) => {
                 if (res.data.succeeded) {
-                    const mainCategories = res.data.data.map(c => ({
-                        categoryId: c.categoryId,
-                        categoryName: c.categoryName,
-                        products: c.products
-                    }));
+                    const allCategories = res.data.data;
+
+                    // Build a lookup for quick access by categoryId
+                    const categoryMap = {};
+                    allCategories.forEach(c => {
+                        categoryMap[c.categoryId] = c;
+                    });
+
+                    // Recursive function to collect products (deeply, using map)
+                    const collectAllProducts = (category) => {
+                        let products = [...(category.products || [])];
+
+                        if (category.subCategories && category.subCategories.length > 0) {
+                            category.subCategories.forEach(sub => {
+                                // Instead of trusting sub.products (may be empty/shallow),
+                                // find the full category in categoryMap
+                                const fullSub = categoryMap[sub.subCategoryId];
+                                if (fullSub) {
+                                    products = [
+                                        ...products,
+                                        ...collectAllProducts(fullSub)
+                                    ];
+                                }
+                            });
+                        }
+                        return products;
+                    };
+
+                    const mainCategories = allCategories
+                        .filter(c => c.parentCategoryId === null) // ✅ top-level only
+                        .map(c => ({
+                            categoryId: c.categoryId,
+                            categoryName: c.categoryName,
+                            products: collectAllProducts(c) // ✅ deep merge products
+                        }));
+
                     setCategories(mainCategories);
                 }
             })
@@ -21,6 +51,8 @@ const ProductCategoriesSection = () => {
                 console.error("Error fetching categories", err);
             });
     }, []);
+
+
 
   const scrollProducts = (containerId, direction) => {
     const container = document.getElementById(containerId);
