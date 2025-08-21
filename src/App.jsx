@@ -32,6 +32,7 @@ function App() {
   const [language, setLanguage] = useState('en');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [selectedSubsubcategory, setSelectedSubsubcategory] = useState(null);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [showCartModal, setShowCartModal] = useState(false);
@@ -147,11 +148,15 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const handleCategoryClick = (category, subcategory = null) => {
+  const handleCategoryClick = (category, subcategory, subsubcategory = null) => {
     setSelectedCategory(category);
     setSelectedSubcategory(subcategory);
+    setSelectedSubsubcategory(subsubcategory);
     setCurrentView('products');
-    updateURL(`products${category ? `/${category.name.toLowerCase().replace(' ', '-')}` : ''}${subcategory ? `/${subcategory.name.toLowerCase().replace(' ', '-')}` : ''}`);
+    updateURL(
+          `products${category ? `/${category.name.toLowerCase().replace(/ /g, '-')}` : ''}${subcategory ? `/${subcategory.name.toLowerCase().replace(/ /g, '-')}` : ''
+          }${subsubcategory ? `/${subsubcategory.name.toLowerCase().replace(/ /g, '-')}` : ''}`
+    );
   };
 
   const handleWishlistClick = () => {
@@ -370,6 +375,7 @@ function App() {
           <ProductsPage 
             selectedCategory={selectedCategory?.name}
             selectedSubcategory={selectedSubcategory?.name}
+            selectedSubsubcategory={selectedSubsubcategory?.name}
             wishlistItems={wishlistItems}
             onWishlistToggle={handleWishlistToggle}
             onAddToCart={addToCart}

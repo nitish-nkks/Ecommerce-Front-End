@@ -247,6 +247,13 @@ const Header = ({ onLoginClick, onNavigate, currentView, onCategoryClick, onWish
     setIsCategoriesOpen(false);
   };
 
+
+  // Handle subcategory item click
+  const handleSubsubcategoryItemClick = (category, subcategory, subsubcategory, item) => {
+      onCategoryClick(category, { name: subcategory.name, item: item }, { name: subsubcategory.name, item: item });
+      setIsCategoriesOpen(false);
+  };
+
   // Handle "All Categories" button click to show all products
   const handleAllCategoriesClick = () => {
     onCategoryClick(null, null); // Clear category and subcategory filters
@@ -1378,7 +1385,7 @@ const Header = ({ onLoginClick, onNavigate, currentView, onCategoryClick, onWish
                                                                           key={subsubcat.id}
                                                                           className="subcategory-item cursor-pointer"
                                                                           onClick={() =>
-                                                                              handleSubcategoryItemClick(category, subcat, subsubcat)
+                                                                              handleSubsubcategoryItemClick(category, subcat, subsubcat)
                                                                           }
                                                                       >
                                                                           {subsubcat.name}

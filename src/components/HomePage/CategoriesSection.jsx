@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getCategories } from '../../api/api';
 
-const CategoriesSection = () => {
+const CategoriesSection = ({ onCategoryClick }) => {
 
     const [categories, setCategories] = useState([]);
 
@@ -14,6 +14,10 @@ const CategoriesSection = () => {
             .catch(err => console.error(err));
     }, []);
 
+    const handleCategoryClick = (category) => {
+        onCategoryClick(category, null);
+        //setIsCategoriesOpen(false);
+    };
 
   //const categories = [
   //  {
@@ -447,7 +451,7 @@ const CategoriesSection = () => {
                   <h3 className="category-name">{category.name}</h3>
                   <p className="category-description">{category.description}</p>
                 </div>
-                <div className="category-overlay">
+                <div className="category-overlay" onClick={() => handleCategoryClick(category)}>
                   <div className="category-overlay-icon">
                     🛒
                   </div>

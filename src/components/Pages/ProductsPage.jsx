@@ -4,9 +4,9 @@ import { Heart, Eye, ShoppingCart, Filter, X, Star, ChevronDown, Search } from '
 import ProductDetailsModal from './ProductDetailsModal';
 import { getParentCategories, getProducts } from '../../api/api';
 
-const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory = null, selectedSubcategory = null, onAddToCart, cartItems = [], onNavigate }) => {
+const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory = null, selectedSubcategory = null, selectedSubsubcategory = null, onAddToCart, cartItems = [], onNavigate }) => {
   // Log props to debug
-  console.log('ProductsPage props:', { selectedCategory, selectedSubcategory });
+  console.log('ProductsPage props:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
   const [selectedFilters, setSelectedFilters] = useState({
     categories: [],
     priceRange: [0, 10000],
@@ -15,17 +15,36 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
   });
 
   // Reset filters when category props change
-  useEffect(() => {
-    console.log('ProductsPage useEffect triggered:', { selectedCategory, selectedSubcategory });
-    setSelectedFilters({
-      categories: [],
-      priceRange: [0, 10000],
-      brands: [],
-      inStock: false
-    });
-    setSearchTerm('');
-    setSortBy('name');
-  }, [selectedCategory, selectedSubcategory]);
+  //useEffect(() => {
+  //  console.log('ProductsPage useEffect triggered:', { selectedCategory, selectedSubcategory });
+  //  setSelectedFilters({
+  //    categories: [],
+  //    priceRange: [0, 10000],
+  //    brands: [],
+  //    inStock: false
+  //  });
+  //  setSearchTerm('');
+  //  setSortBy('name');
+  //}, [selectedCategory, selectedSubcategory]);
+
+    useEffect(() => {
+        console.log('ProductsPage useEffect triggered:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
+
+        setSelectedFilters({
+            categories: [
+                ...(selectedCategory ? [selectedCategory] : []),
+                ...(selectedSubcategory ? [selectedSubcategory] : []),
+                ...(selectedSubsubcategory ? [selectedSubsubcategory] : [])
+            ],
+            priceRange: [0, 10000],
+            brands: [],
+            inStock: false
+        });
+
+        setSearchTerm('');
+        setSortBy('name');
+    }, [selectedCategory, selectedSubcategory, selectedSubsubcategory]);
+
   const [sortBy, setSortBy] = useState('name');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -244,6 +263,8 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                         discount: p.discountPercentage,
                         category: p.categoryName,
                         categortId: p.categoryId,
+                        subcategory: p.categoryName,
+                        subsubcategory: p.categoryName,
                         stock: p.stockQuantity,
                         inStock: p.stockQuantity > 0 ? true : false,
                         minOrderQuantity: p.minOrderQuantity,
@@ -365,7 +386,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
 
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
-    console.log('Filtering products with:', { selectedCategory, selectedSubcategory });
+    console.log('Filtering products with:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
     let filtered = allProducts;
 
     // Apply category filter if coming from navigation
@@ -386,6 +407,15 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
       );
       console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
     }
+
+      if (selectedSubsubcategory) {
+          console.log('Applying subsubcategory filter:', selectedSubsubcategory);
+          const beforeFilter = filtered.length;
+          filtered = filtered.filter(product =>
+              product.subsubcategory.toLowerCase() === selectedSubsubcategory.toLowerCase()
+          );
+          console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
+      }
 
     // Apply search filter
     if (searchTerm) {
@@ -439,7 +469,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
     });
 
     return filtered;
-  }, [allProducts, selectedFilters, sortBy, searchTerm, selectedCategory, selectedSubcategory]);
+  }, [allProducts, selectedFilters, sortBy, searchTerm, selectedCategory, selectedSubcategory, selectedSubsubcategory ]);
 
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters(prev => {
