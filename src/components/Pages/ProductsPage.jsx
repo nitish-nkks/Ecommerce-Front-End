@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Heart, Eye, ShoppingCart, Filter, X, Star, ChevronDown, Search } from 'lucide-react';
 import ProductDetailsModal from './ProductDetailsModal';
 import { getParentCategories, getProducts } from '../../api/api';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
 const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory = null, selectedSubcategory = null, selectedSubsubcategory = null, onAddToCart, cartItems = [], onNavigate }) => {
   // Log props to debug
@@ -367,109 +368,46 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
         }
     }
 
-  const handleBuyNow = (product) => {
-    // Add to cart first if not already added
-    if (!getItemInCart(product.id)) {
-      handleAddToCart(product);
-    }
+  //const handleBuyNow = (product) => {
+  //  // Add to cart first if not already added
+  //  if (!getItemInCart(product.id)) {
+  //    handleAddToCart(product);
+  //  }
 
-      console.log('navigate: ',onNavigate);
-      // Navigate to checkout
-    if (onNavigate) {
-      onNavigate('checkout');
-    }
-  };
+  //    console.log('navigate: ',onNavigate);
+  //    // Navigate to checkout
+  //  if (onNavigate) {
+  //    onNavigate('checkout');
+  //  }
+  //};
+    const [open, setOpen] = useState(false);
+    const handleClose = () => setOpen(false);
 
+    const handleBuyNow = (product) => {
+        // Add to cart first if not already added
+        const isLoggedIn = !!localStorage.getItem("token");
+        console.log('LoggedIn', isLoggedIn);
+        if (!isLoggedIn) {
+            setOpen(true); // ⛔ show login modal
+            console.log('LoggedIn', isLoggedIn);
+            if (!getItemInCart(product.id)) {
+                console.log("Product not in cart, adding to cart first:", product);
+                handleAddToCart(product);
+            }
+            return;
+        }
+
+        console.log(onNavigate);
+        if (onNavigate) {
+            console.log('onNavigate', onNavigate);
+            onNavigate('checkout');
+        }
+    };
   const getItemInCart = (productId) => {
     return cartItems.find(item => item.id === productId);
   };
 
   // Filter and sort products
-  //const filteredAndSortedProducts = useMemo(() => {
-  //  console.log('Filtering products with:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
-  //  let filtered = allProducts;
-
-  //  // Apply category filter if coming from navigation
-  //  if (selectedCategory) {
-  //    console.log('Applying category filter:', selectedCategory);
-  //    const beforeFilter = filtered.length;
-  //    filtered = filtered.filter(product =>
-  //      product.category.toLowerCase() === selectedCategory.toLowerCase()
-  //    );
-  //    console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
-  //  }
-
-  //  if (selectedSubcategory) {
-  //    console.log('Applying subcategory filter:', selectedSubcategory);
-  //    const beforeFilter = filtered.length;
-  //    filtered = filtered.filter(product =>
-  //      product.subcategory.toLowerCase() === selectedSubcategory.toLowerCase()
-  //    );
-  //    console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
-  //  }
-
-  //    if (selectedSubsubcategory) {
-  //        console.log('Applying subsubcategory filter:', selectedSubsubcategory);
-  //        const beforeFilter = filtered.length;
-  //        filtered = filtered.filter(product =>
-  //            product.subsubcategory.toLowerCase() === selectedSubsubcategory.toLowerCase()
-  //        );
-  //        console.log(`Filtered products: ${beforeFilter} -> ${filtered.length}`);
-  //    }
-
-  //  // Apply search filter
-  //  if (searchTerm) {
-  //    filtered = filtered.filter(product =>
-  //      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //      product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  //    );
-  //  }
-
-  //  // Apply category filters
-  //  if (selectedFilters.categories.length > 0) {
-  //    filtered = filtered.filter(product =>
-  //      selectedFilters.categories.includes(product.category)
-  //    );
-  //  }
-
-  //  // Apply brand filters
-  //  if (selectedFilters.brands.length > 0) {
-  //    filtered = filtered.filter(product =>
-  //      selectedFilters.brands.includes(product.brand)
-  //    );
-  //  }
-
-  //  // Apply price range filter
-  //  filtered = filtered.filter(product =>
-  //    product.price >= selectedFilters.priceRange[0] &&
-  //    product.price <= selectedFilters.priceRange[1]
-  //  );
-
-
-  //  // Apply stock filter
-  //  if (selectedFilters.inStock) {
-  //    filtered = filtered.filter(product => product.inStock);
-  //  }
-
-  //  // Sort products
-  //  filtered.sort((a, b) => {
-  //    switch (sortBy) {
-  //      case 'price_low':
-  //        return a.price - b.price;
-  //      case 'price_high':
-  //        return b.price - a.price;
-  //      case 'rating':
-  //        return b.rating - a.rating;
-  //      case 'discount':
-  //        return b.discount - a.discount;
-  //      default:
-  //        return a.name.localeCompare(b.name);
-  //    }
-  //  });
-
-  //  return filtered;
-  //}, [allProducts, selectedFilters, sortBy, searchTerm, selectedCategory, selectedSubcategory, selectedSubsubcategory ]);
 
     const filteredAndSortedProducts = useMemo(() => {
         let filtered = allProducts;
@@ -1113,7 +1051,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           flex: 1;
           padding: 10px 12px;
           border: none;
-          border-radius: 8px;
+          border-radius: 6px;
           font-size: 0.8rem;
           font-weight: 600;
           cursor: pointer;
@@ -1166,13 +1104,13 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           background: white;
           border: 1px solid #d1d5db;
           border-radius: 6px;
-          width: 32px;
-          height: 32px;
+          width: 24px;
+          height: 24px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          font-weight: 600;
+          font-weight: 400;
           color: #374151;
           transition: all 0.2s ease;
         }
@@ -1222,6 +1160,21 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           font-size: 4rem;
           margin-bottom: 20px;
         }
+
+        .login-btn {
+          padding: 6px 12px;
+          font-size: 14px;
+          border-radius: 6px;
+          background-color: #16a34a; 
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .login-btn:hover {
+          background-color: #15803d;
+        }
+
 
         @media (max-width: 1024px) {
           .products-container {
@@ -1435,7 +1388,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                         className={`action-btn wishlist ${isInWishlist(product.id) ? 'filled' : ''}`}
                         onClick={() => handleWishlistClick(product)}
                         title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                      >
+                      >product-btn
                         <Heart size={16} fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
                       </button>
                       <button
@@ -1536,7 +1489,27 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
           wishlistItems={wishlistItems}
           onWishlistToggle={handleWishlistClick}
         />
-      )}
+          )}
+
+          {/* Custom Login Required Modal */}
+          <Dialog open={open} onClose={handleClose}>
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogContent>
+                  Login is required to proceed with buying this product.
+              </DialogContent>
+              <DialogActions>
+                  <Button onClick={handleClose}>Cancel</Button>
+                  <button
+                      className="login-btn"
+                      onClick={() => {
+                          setOpen(false);
+                          onNavigate && onNavigate("login");
+                      }}
+                  >
+                      🔑 LOGIN
+                  </button>
+              </DialogActions>
+          </Dialog>
     </div>
   );
 };
