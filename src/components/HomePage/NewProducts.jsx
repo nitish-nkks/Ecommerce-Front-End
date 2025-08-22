@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
-import { getProducts } from '../../api/api';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
 
-const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
+const NewProducts = ({ products = [], wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
   const [newProductsSlide, setNewProductsSlide] = useState(0);
 
   const isInWishlist = (productId) => {
@@ -80,44 +79,34 @@ const NewProducts = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartIt
     }
   };
 
-    const [newProducts, setNewProducts] = useState([]);
+    const [newProducts, setNewProducts] = useState([]);    
 
     useEffect(() => {
-        getProducts()
-            .then((res) => {
-                const products = res.data?.data || [];
-
-                const mappedProducts = products
-                    .filter((p) => p.isNewProduct) // ✅ Keep only featured products
-                    .map((p) => ({
-                        id: p.id,
-                        name: p.name,
-                        image: p.image || "/src/assets/placeholder.png",
-                        price: p.price,
-                        originalPrice: p.price,
-                        oldPrice: `₹${p.price.toLocaleString()}`,
-                        currentPrice:
-                            p.discountPercentage > 0
-                                ? `₹${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
-                                : null,
-                        discount: p.discountPercentage,
-                        badge: p.isNewProduct
-                                ? "NEW" : null,
-                        brand: null,
-                        category: p.categoryName,
-                        subcategory: null,
-                        stock: p.stockQuantity,
-                        minOrderQuantity: p.minOrderQuantity,
-                        inStock: p.stockQuantity > 0 ? true : false,
-                    }));
-
-                setNewProducts(mappedProducts);
-            })
-            .catch((err) => {
-                console.error("Error fetching products:", err);
-            });
-    }, []);
-
+        const mappedProducts = products
+            .filter((p) => p.isNewProduct) 
+            .map((p) => ({
+                id: p.id,
+                name: p.name,
+                image: p.image || "/src/assets/placeholder.png",
+                price: p.price,
+                originalPrice: p.price,
+                oldPrice: `₹${p.price.toLocaleString()}`,
+                currentPrice:
+                    p.discountPercentage > 0
+                        ? `₹${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                        : null,
+                discount: p.discountPercentage,
+                badge: p.isNewProduct
+                    ? "NEW" : null,
+                brand: null,
+                category: p.categoryName,
+                subcategory: null,
+                stock: p.stockQuantity,
+                minOrderQuantity: p.minOrderQuantity,
+                inStock: p.stockQuantity > 0 ? true : false,
+            }));
+        setNewProducts(mappedProducts);
+    }, [products]);
 
   //const newProducts = [
   //  {

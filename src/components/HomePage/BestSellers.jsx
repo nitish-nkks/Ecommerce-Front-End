@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
-import { getProducts } from '../../api/api';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
-const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
+const BestSellers = ({ products = [], wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
   const [bestSellingSlide, setBestSellingSlide] = useState(0);
 
   const isInWishlist = (productId) => {
@@ -82,41 +81,33 @@ const BestSellers = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartIt
     const [bestSellingProducts, setBestSellingProducts] = useState([]);
 
     useEffect(() => {
-        getProducts()
-            .then((res) => {
-                const products = res.data?.data || [];
+        const mappedProducts = products
+            .filter((p) => p.isBestSeller)
+            .map((p) => ({
+                id: p.id,
+                name: p.name,
+                image: p.image || "/src/assets/placeholder.png",
+                price: p.price,
+                originalPrice: p.price,
+                oldPrice: `₹${p.price.toLocaleString()}`,
+                currentPrice:
+                    p.discountPercentage > 0
+                        ? `₹${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
+                        : null,
+                discount: p.discountPercentage,
+                badge: p.isBestSeller
+                    ? "Best Seller"
+                    : null,
+                brand: null,
+                category: p.categoryName,
+                subcategory: null,
+                stock: p.stockQuantity,
+                minOrderQuantity: p.minOrderQuantity,
+                inStock: p.stockQuantity > 0 ? true : false
+            }));
 
-                const mappedProducts = products
-                    .filter((p) => p.isBestSeller) 
-                    .map((p) => ({
-                        id: p.id,
-                        name: p.name,
-                        image: p.image || "/src/assets/placeholder.png",
-                        price: p.price,
-                        originalPrice: p.price,
-                        oldPrice: `₹${p.price.toLocaleString()}`,
-                        currentPrice:
-                            p.discountPercentage > 0
-                                ? `₹${(p.price * (1 - p.discountPercentage / 100)).toFixed(2)}`
-                                : null,
-                        discount: p.discountPercentage,
-                        badge: p.isBestSeller
-                                ? "Best Seller"
-                                : null,
-                        brand: null,
-                        category: p.categoryName,
-                        subcategory: null,
-                        stock: p.stockQuantity,
-                        minOrderQuantity: p.minOrderQuantity,
-                        inStock: p.stockQuantity > 0 ? true : false
-                    }));
-
-                setBestSellingProducts(mappedProducts);
-            })
-            .catch((err) => {
-                console.error("Error fetching products:", err);
-            });
-    }, []);
+        setBestSellingProducts(mappedProducts);
+    }, [products]); 
 
   //const bestSellingProducts = [
   //  {
