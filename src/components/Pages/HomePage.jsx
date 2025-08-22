@@ -10,10 +10,10 @@ import NewProducts from '../HomePage/NewProducts';
 import WelcomeSection from '../HomePage/WelcomeSection';
 import FloatingButtons from '../HomePage/FloatingButtons';
 import '../HomePage/HomePage.css';
-import { getProducts } from '../../api/api'; 
-
+import { getProducts, getCategoriesWithProducts } from '../../api/api'; 
 const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         getProducts()
@@ -26,10 +26,24 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
             .catch(err => console.error("Error fetching products:", err));
     }, []);
 
+    useEffect(() => {
+        getCategoriesWithProducts()
+            .then(res => {
+                if (res.data) {
+                    const categories = res.data?.data || [];
+                    setCategories(categories);
+                }
+            })
+            .catch(err => console.error("Error fetching products:", err));
+    }, []);
+
     return (
         <div className="w-full bg-white">
             <BannerCarousel />
-            <CategoriesSection onCategoryClick={onCategoryClick} />
+            <CategoriesSection
+                onCategoryClick={onCategoryClick}
+                categories={categories}
+            />
             <BrandMarquee />
             <FeaturedProducts
                 products={products}
@@ -55,7 +69,10 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
                 cartItems={cartItems}
                 onNavigate={onNavigate}
             />
-            <ProductCategoriesSection onCategoryClick={onCategoryClick} />
+            <ProductCategoriesSection
+                onCategoryClick={onCategoryClick}
+                categories={categories}
+            />
             <NewProducts
                 products={products}
                 wishlistItems={wishlistItems}

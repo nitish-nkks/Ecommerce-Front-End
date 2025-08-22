@@ -1388,7 +1388,7 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                         className={`action-btn wishlist ${isInWishlist(product.id) ? 'filled' : ''}`}
                         onClick={() => handleWishlistClick(product)}
                         title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                      >product-btn
+                      >
                         <Heart size={16} fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
                       </button>
                       <button

@@ -1,57 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
-import { getCategoriesWithProducts } from '../../api/api';
 
-const ProductCategoriesSection = () => {
-    const [categories, setCategories] = useState([]);
+const ProductCategoriesSection = ({ categories = []}) => {
+    const [categoriesList, setCategoriesList] = useState([]);
+
     useEffect(() => {
-        getCategoriesWithProducts()
-            .then((res) => {
-                if (res.data.succeeded) {
-                    const allCategories = res.data.data;
+        if (!categories.length) return;
 
-                    // Build a lookup for quick access by categoryId
-                    const categoryMap = {};
-                    allCategories.forEach(c => {
-                        categoryMap[c.categoryId] = c;
-                    });
+        // Build a lookup for quick access by categoryId
+        const categoryMap = {};
+        categories.forEach((c) => {
+            categoryMap[c.categoryId] = c;
+        });
 
-                    // Recursive function to collect products (deeply, using map)
-                    const collectAllProducts = (category) => {
-                        let products = [...(category.products || [])];
+        // Recursive function to collect products (deeply, using map)
+        const collectAllProducts = (category) => {
+            let products = [...(category.products || [])];
 
-                        if (category.subCategories && category.subCategories.length > 0) {
-                            category.subCategories.forEach(sub => {
-                                // Instead of trusting sub.products (may be empty/shallow),
-                                // find the full category in categoryMap
-                                const fullSub = categoryMap[sub.subCategoryId];
-                                if (fullSub) {
-                                    products = [
-                                        ...products,
-                                        ...collectAllProducts(fullSub)
-                                    ];
-                                }
-                            });
-                        }
-                        return products;
-                    };
+            if (category.subCategories && category.subCategories.length > 0) {
+                category.subCategories.forEach((sub) => {
+                    // Instead of trusting sub.products (may be empty/shallow),
+                    // find the full category in categoryMap
+                    const fullSub = categoryMap[sub.subCategoryId];
+                    if (fullSub) {
+                        products = [...products, ...collectAllProducts(fullSub)];
+                    }
+                });
+            }
+            return products;
+        };
 
-                    const mainCategories = allCategories
-                        .filter(c => c.parentCategoryId === null) // ✅ top-level only
-                        .map(c => ({
-                            categoryId: c.categoryId,
-                            categoryName: c.categoryName,
-                            products: collectAllProducts(c) // ✅ deep merge products
-                        }));
+        // Pick only top-level categories and merge their products
+        const mainCategories = categories
+            .filter((c) => c.parentCategoryId === null) // ✅ top-level only
+            .map((c) => ({
+                categoryId: c.categoryId,
+                categoryName: c.categoryName,
+                products: collectAllProducts(c), // ✅ deep merge products
+            }));
 
-                    setCategories(mainCategories);
-                }
-            })
-            .catch((err) => {
-                console.error("Error fetching categories", err);
-            });
-    }, []);
-
+        setCategoriesList(mainCategories);
+    }, [categories]); // ✅ recompute when categories prop changes
 
 
   const scrollProducts = (containerId, direction) => {
@@ -318,7 +307,7 @@ const ProductCategoriesSection = () => {
 
       <div className="product-categories-section">
         <div className="product-categories-container">
-                    {categories.map((category) => (
+                  {categoriesList.map((category) => (
                         <div key={category.categoryId} className="product-category-block">
                             {/* Category header */}
             <div className="product-category-header">
