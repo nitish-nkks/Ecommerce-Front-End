@@ -1,179 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Flame, ShoppingCart, Filter, Eye, Heart, Plus, Minus } from 'lucide-react';
 import { createProductCartAnimation } from '../../utils/cartAnimation';
+import { getCategories, getFlashSales } from '../../api/api';
+import dayjs from "dayjs";
 
 const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems = [] }) => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 45,
     seconds: 30
   });
 
-  // Countdown timer
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        let { hours, minutes, seconds } = prevTime;
-        
-        if (seconds > 0) {
-          seconds--;
-        } else if (minutes > 0) {
-          seconds = 59;
-          minutes--;
-        } else if (hours > 0) {
-          seconds = 59;
-          minutes = 59;
-          hours--;
-        } else {
-          // Reset timer when it reaches 0
-          hours = 23;
-          minutes = 59;
-          seconds = 59;
-        }
-        
-        return { hours, minutes, seconds };
-      });
-    }, 1000);
+  const [flashSaleProducts, setFlashSaleProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-    return () => clearInterval(timer);
-  }, []);
 
-  const categories = [
-    { id: 'all', name: 'All Products', icon: '🏷️' },
-    { id: 'poultry', name: 'Poultry Feed', icon: '🐔' },
-    { id: 'cattle', name: 'Cattle Feed', icon: '🐄' },
-    { id: 'fish', name: 'Fish Feed', icon: '🐟' },
-    { id: 'supplements', name: 'Supplements', icon: '💊' },
-    { id: 'medicine', name: 'Medicine', icon: '🏥' }
-  ];
+    // Countdown timer based on flashSaleProducts
+    useEffect(() => {
+        if (!flashSaleProducts || flashSaleProducts.length === 0) return;
 
-  const flashSaleProducts = [
-    {
-      id: 18,
-      name: "AMOXIRUM TAB - Premium Antibiotic",
-      category: "medicine",
-      image: "/src/assets/scb1.png",
-      price: 159.50,
-      originalPrice: 200.48,
-      salePrice: 159.50,
-      discount: 20,
-      stock: 45,
-      sold: 189,
-      badge: "FLASH SALE",
-      brand: "VetCare",
-      subcategory: "Antibiotics"
-    },
-    {
-      id: 19,
-      name: "Calgophos - Calcium Supplement",
-      category: "supplements",
-      image: "/src/assets/scb2.png",
-      price: 2281.10,
-      originalPrice: 2820.00,
-      salePrice: 2281.10,
-      discount: 19,
-      stock: 23,
-      sold: 267,
-      badge: "LIMITED DEAL",
-      brand: "NutriVet",
-      subcategory: "Minerals"
-    },
-    {
-      id: 20,
-      name: "SOKRENA W.S. - Poultry Growth",
-      category: "poultry",
-      image: "/src/assets/scb3.png",
-      price: 3854.92,
-      originalPrice: 4701.12,
-      salePrice: 3854.92,
-      discount: 18,
-      stock: 34,
-      sold: 123,
-      badge: "HOT DEAL",
-      brand: "PoultryPro",
-      subcategory: "Growth Promoters"
-    },
-    {
-      id: 21,
-      name: "Vimeral Forte - Multi-Vitamin",
-      category: "supplements",
-      image: "/src/assets/scb4.png",
-      price: 688.00,
-      originalPrice: 800.00,
-      salePrice: 688.00,
-      discount: 14,
-      stock: 67,
-      sold: 445,
-      badge: "BEST SELLER",
-      brand: "VitalVet",
-      subcategory: "Vitamins"
-    },
-    {
-      id: 22,
-      name: "Premium Fish Feed Pro",
-      category: "fish",
-      image: "/src/assets/p1.png",
-      price: 1250.00,
-      originalPrice: 1500.00,
-      salePrice: 1250.00,
-      discount: 17,
-      stock: 56,
-      sold: 234,
-      badge: "NEW ARRIVAL",
-      brand: "AquaFeed",
-      subcategory: "Feed"
-    },
-    {
-      id: 23,
-      name: "Cattle Nutrition Plus Premium",
-      category: "cattle",
-      image: "/src/assets/p2.png",
-      price: 2800.00,
-      originalPrice: 3200.00,
-      salePrice: 2800.00,
-      discount: 12,
-      stock: 29,
-      sold: 356,
-      badge: "PREMIUM",
-      brand: "CattleCare",
-      subcategory: "Feed Supplements"
-    },
-    {
-      id: 24,
-      name: "TC Powder - Broad Spectrum",
-      category: "medicine",
-      image: "/src/assets/scb1.png",
-      price: 77.10,
-      originalPrice: 99.23,
-      salePrice: 77.10,
-      discount: 22,
-      stock: 78,
-      sold: 567,
-      badge: "FLASH SALE",
-      brand: "VetCare",
-      subcategory: "Antibiotics"
-    },
-    {
-      id: 25,
-      name: "E Care Se - Vitamin E Supplement",
-      category: "supplements",
-      image: "/src/assets/scb2.png",
-      price: 288.82,
-      originalPrice: 563.00,
-      salePrice: 288.82,
-      discount: 49,
-      stock: 34,
-      sold: 289,
-      badge: "MEGA DEAL",
-      brand: "VitalVet",
-      subcategory: "Vitamins"
-    }
-  ];
+        const now = dayjs();
 
-  const filteredProducts = selectedCategory === 'all' 
+        // Find nearest expiry (endTime if present, else endDate)
+        const nearestEnd = flashSaleProducts
+            .map(product => {
+                if (product.endTime) {
+                    // If endTime exists, combine with today
+                    const today = dayjs().startOf("day");
+                    return dayjs(`${today.format("YYYY-MM-DD")}T${product.endTime}`);
+                } else if (product.endDate) {
+                    return dayjs(product.endDate);
+                }
+                return null;
+            })
+            .filter(date => date && date.isAfter(now))
+            .sort((a, b) => a.valueOf() - b.valueOf())[0];
+
+        if (!nearestEnd) return;
+
+        const timer = setInterval(() => {
+            const diff = nearestEnd.diff(dayjs(), "second");
+            if (diff <= 0) {
+                clearInterval(timer);
+                setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+                return;
+            }
+
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+
+            setTimeLeft({ hours, minutes, seconds });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [flashSaleProducts]);
+
+    useEffect(() => {
+        // Fetch categories
+        const fetchCategories = async () => {
+            try {
+                const res = await getCategories();
+                const categoryList = (res.data?.data || []).filter(cat => cat.parentCategoryId === null);
+                setCategories(categoryList);
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+            }
+        };
+
+        // Fetch flash sales
+        const fetchFlashSales = async () => {
+            try {
+                const res = await getFlashSales();
+                console.log('response:', res);
+                if (res?.data.succeeded) {
+                    setFlashSaleProducts(res.data?.data || []);
+                }
+            } catch (err) {
+                console.error("Error fetching flash sales:", err);
+            }
+        };
+
+        fetchCategories();
+        fetchFlashSales();
+    }, []);
+
+    console.log(selectedCategory);
+  const filteredProducts = selectedCategory === null 
     ? flashSaleProducts 
-    : flashSaleProducts.filter(product => product.category === selectedCategory);
+      : flashSaleProducts.filter(product => product.parentCategory === selectedCategory);
 
   const isInWishlist = (productId) => {
     return wishlistItems.some(item => item.id === productId);
@@ -205,11 +121,6 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
 
   const getItemInCart = (productId) => {
     return cartItems.find(item => item.id === productId);
-  };
-
-  const getStockPercentage = (stock, sold) => {
-    const total = stock + sold;
-    return total > 0 ? (sold / total) * 100 : 0;
   };
 
   return (
@@ -521,7 +432,7 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
           position: absolute;
           top: 12px;
           left: 12px;
-          background: #dc2626;
+          background: #f59e0b;
           color: white;
           padding: 4px 8px;
           border-radius: 12px;
@@ -888,24 +799,55 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
           </div>
 
           {/* Categories Filter */}
-          <div className="categories-filter">
-            <div className="categories-header">
-              <Filter size={24} />
-              <h2>Shop by Category</h2>
-            </div>
-            <div className="categories-grid">
-              {categories.map(category => (
-                <button
-                  key={category.id}
-                  className={`category-btn ${selectedCategory === category.id ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <span className="category-icon">{category.icon}</span>
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/*<div className="categories-filter">*/}
+          {/*  <div className="categories-header">*/}
+          {/*    <Filter size={24} />*/}
+          {/*    <h2>Shop by Category</h2>*/}
+          {/*  </div>*/}
+          {/*  <div className="categories-grid">*/}
+          {/*    {categories.map(category => (*/}
+          {/*      <button*/}
+          {/*        key={category.id}*/}
+          {/*        className={`category-btn ${selectedCategory === category.id ? 'active' : ''}`}*/}
+          {/*        onClick={() => setSelectedCategory(category.id)}*/}
+          {/*      >*/}
+          {/*        <span className="category-icon">{category.icon}</span>*/}
+          {/*        {category.name}*/}
+          {/*      </button>*/}
+          {/*    ))}*/}
+          {/*  </div>*/}
+                  {/*</div>*/}
+
+                  {/* Categories Filter */}
+                  <div className="categories-filter">
+                      <div className="categories-header">
+                          <Filter size={24} />
+                          <h2>Shop by Category</h2>
+                      </div>
+
+                      <div className="categories-grid">
+                          {/* "All" option */}
+                          <button
+                              className={`category-btn ${selectedCategory === null ? 'active' : ''}`}
+                              onClick={() => setSelectedCategory(null)}
+                          >
+                              <span className="category-icon">🌐</span>
+                              All
+                          </button>
+
+                          {/* Main categories from API */}
+                          {categories.map(category => (
+                              <button
+                                  key={category.id}
+                                  className={`category-btn ${selectedCategory === category.name ? 'active' : ''}`}
+                                  onClick={() => setSelectedCategory(category.name)}
+                              >
+                                  <span className="category-icon">{category.icon}</span>
+                                  {category.name}
+                              </button>
+                          ))}
+                      </div>
+                  </div>
 
           {/* Products Grid */}
           <div className="products-grid">
@@ -921,7 +863,7 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
                       e.target.parentNode.innerHTML += `<div style="color: white; font-weight: 600; text-align: center; padding: 20px;">${product.name}</div>`;
                     }}
                   />
-                  <div className="product-badge">{product.badge}</div>
+                  <div className="product-badge">{product.parentCategory}</div>
                   <div className="discount-badge">-{product.discount}%</div>
                   <button 
                     className={`product-wishlist ${isInWishlist(product.id) ? 'filled' : ''}`}
@@ -936,9 +878,9 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
                   
                   <h3 className="product-name">{product.name}</h3>
                   
-                  <div className="product-pricing">
-                    <span className="sale-price">₹{product.salePrice.toFixed(2)}</span>
+                   <div className="product-pricing">
                     <span className="original-price">₹{product.originalPrice.toFixed(2)}</span>
+                    <span className="sale-price">₹{product.salePrice.toFixed(2)}</span>
                     <span className="savings">-{product.discount}%</span>
                   </div>
                   
