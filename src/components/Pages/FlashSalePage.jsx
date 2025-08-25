@@ -4,7 +4,7 @@ import { createProductCartAnimation } from '../../utils/cartAnimation';
 import { getCategories, getFlashSales } from '../../api/api';
 import dayjs from "dayjs";
 
-const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems = [] }) => {
+const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems = [], onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
@@ -86,7 +86,7 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
         fetchFlashSales();
     }, []);
 
-    console.log(selectedCategory);
+  //console.log(selectedCategory);
   const filteredProducts = selectedCategory === null 
     ? flashSaleProducts 
       : flashSaleProducts.filter(product => product.parentCategory === selectedCategory);
@@ -101,27 +101,80 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
     }
   };
 
-  const handleAddToCart = (product) => {
-    if (onAddToCart) {
-      onAddToCart(product, 1);
+  //const handleAddToCart = (product) => {
+  //  if (onAddToCart) {
+  //    onAddToCart(product, 1);
       
-      // Trigger animation from the clicked button
-      const event = window.event || {};
-      if (event.target) {
-        createProductCartAnimation(event.target.closest('button'), product);
-      }
-    }
-  };
+  //    // Trigger animation from the clicked button
+  //    const event = window.event || {};
+  //    if (event.target) {
+  //      createProductCartAnimation(event.target.closest('button'), product);
+  //    }
+  //  }
+  //};
 
-  const handleQuantityChange = (product, change) => {
-    if (onAddToCart) {
-      onAddToCart(product, change);
-    }
-  };
+    const handleAddToCart = (product) => {
+        console.log("cartItems: ", cartItems);
+        const minQty = product.minOrderQuantity || 1;
+        if (onAddToCart) {
+            onAddToCart(product, minQty);
+
+            // Trigger animation from the clicked button
+            const event = window.event || {};
+            if (event.target) {
+                createProductCartAnimation(event.target.closest('button'), product);
+            }
+        }
+    };
+
+  //const handleQuantityChange = (product, change) => {
+  //  if (onAddToCart) {
+  //    onAddToCart(product, change);
+  //  }
+  //};
+
+    const handleQuantityChange = (product, change) => {
+        const minQty = product.minOrderQuantity || 1;
+        const stockQty = product.stock;
+
+        const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+        const newQty = currentQty + change;
+
+        console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty, 'minOrder: ', product.minOrderQuantity);
+
+        if (newQty < minQty) return;
+        if (stockQty < newQty) return;
+
+        if (onAddToCart) {
+            onAddToCart(product, change);
+        }
+    };
 
   const getItemInCart = (productId) => {
     return cartItems.find(item => item.id === productId);
   };
+
+    const handleBuyNow = (product) => {
+        // Add to cart first if not already added
+        const isLoggedIn = !!localStorage.getItem("token");
+        console.log('LoggedIn', isLoggedIn);
+        if (!isLoggedIn) {
+            setOpen(true); // ⛔ show login modal
+            console.log('LoggedIn', isLoggedIn);
+            if (!getItemInCart(product.id)) {
+                console.log("Product not in cart, adding to cart first:", product);
+                handleAddToCart(product);
+            }
+            return;
+        }
+
+        console.log(onNavigate);
+        if (onNavigate) {
+            console.log('onNavigate', onNavigate);
+            onNavigate('checkout');
+        }
+    };
 
   return (
     <>
@@ -605,9 +658,8 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
 
         .product-buttons {
           display: flex;
-          gap: 6px;
-          justify-content: flex-end;
-          margin-top: 4px;
+          gap: 10px;
+          justify-content: space-between;
         }
 
         .flash-btn {
@@ -624,6 +676,85 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
           display: flex;
           align-items: center;
           gap: 4px;
+        }
+
+        .flash-btn:disabled {
+          background-color: #374151; /* gray */
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        .new-btn {
+          flex: 1; /* makes all buttons share equal space */
+          min-width: 120px; /* ensures consistent minimum size */
+          text-align: center;
+          padding: 8px 12px;
+          border-radius: 7px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 6px;
+        }
+
+        //.new-btn {
+        //  flex: 1 1 auto; 
+        //  padding: 5px 10px 5px 8px;
+        //  border-radius: 7px;
+        //  font-size: 0.82rem;
+        //  font-weight: 600;
+        //  border: none;
+        //  cursor: pointer;
+        //  transition: all 0.3s ease;
+        //  text-transform: uppercase;
+        //  letter-spacing: 0.5px;
+        //  display: flex;
+        //  align-items: center;
+        //  gap: 4px;
+        //}
+
+        .new-add-cart {
+          background: #059669;
+          color: white;
+        }
+
+        .new-add-cart:hover {
+          background: #047857;
+          transform: translateY(-1px);
+        }
+
+        .new-buy-now {
+          background: #3b82f6;
+          color: white;
+        }
+
+        .new-buy-now:hover {
+          background: #059669;
+          transform: translateY(-1px);
+        }
+
+          
+        .new-btn:disabled {
+          background-color: #374151; /* gray */
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        
+        .new-buy-now {
+          background: #3b82f6;
+          color: white;
+        }
+
+        .new-buy-now:hover {
+          background: #059669;
+          transform: translateY(-1px);
         }
 
         .add-to-cart-btn {
@@ -699,6 +830,66 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
         .buy-now-btn:hover {
           transform: translateY(-2px);
           box-shadow: 0 12px 25px rgba(249, 242, 37, 0.25);
+        }
+       .quantity-selector {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border: 1px solid #d1d5db;
+          border-radius: 7px;   /* match Add to Cart */
+          overflow: hidden;
+          height: 34px;         /* same height as Add to Cart */
+          background: #fff;
+           min-width: 130px;
+        }
+
+        .quantity-btn {
+          width: 32px;          /* square buttons */
+          height: 100%;         /* matches parent height */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 600;
+          background: #f3f4f6;  /* keep old color */
+          color: #374151;
+        }
+      
+        .quantity-display {
+          min-width: 36px;      /* consistent width */
+          text-align: center;
+          font-size: 0.82rem;   /* match Add to Cart font size */
+          font-weight: 600;
+          color: #1f2937;
+          user-select: none;
+        }
+          .quantity-btn:hover {
+          background: #e5e7eb;
+          border-color: #9ca3af;
+        }
+
+        .quantity-btn.decrease {
+          background: #fef2f2;
+          border-color: #fecaca;
+          color: #dc2626;
+        }
+
+        .quantity-btn.decrease:hover {
+          background: #fee2e2;
+          border-color: #fca5a5;
+        }
+
+        .quantity-btn.increase {
+          background: #f0fdf4;
+          border-color: #bbf7d0;
+          color: #059669;
+        }
+
+        .quantity-btn.increase:hover {
+          background: #dcfce7;
+          border-color: #86efac;
         }
 
 
@@ -884,73 +1075,69 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
                     <span className="savings">-{product.discount}%</span>
                   </div>
                   
-                  <div className="product-buttons">
-                    {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        background: '#f3f4f6',
-                        borderRadius: '8px',
-                        padding: '4px',
-                        gap: '4px',
-                        flex: 1
-                      }}>
-                        <button 
-                          style={{
-                            background: '#fef2f2',
-                            border: '1px solid #fecaca',
-                            borderRadius: '6px',
-                            width: '32px',
-                            height: '32px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            color: '#dc2626',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onClick={() => handleQuantityChange(product, -1)}
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span style={{
-                          flex: 1,
-                          textAlign: 'center',
-                          fontWeight: '600',
-                          color: '#1f2937',
-                          padding: '4px 8px'
-                        }}>
-                          {getItemInCart(product.id).quantity}
-                        </span>
-                        <button 
-                          style={{
-                            background: '#f0fdf4',
-                            border: '1px solid #bbf7d0',
-                            borderRadius: '6px',
-                            width: '32px',
-                            height: '32px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            color: '#059669',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onClick={() => handleQuantityChange(product, 1)}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                    ) : (
-                      <button 
-                        className="flash-btn add-to-cart-btn"
-                        onClick={() => handleAddToCart(product)}
-                      >
-                        🛒 ADD TO CART
-                      </button>
-                    )}
-                    <button className="flash-btn buy-now-btn">🛍️ BUY NOW</button>
-                  </div>
+                  {/*<div className="product-buttons">*/}
+                  {/*          {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (*/}
+                  {/*              <div className="quantity-selector">*/}
+                  {/*                  <button*/}
+                  {/*                      className="quantity-btn decrease"*/}
+                  {/*                      onClick={() => handleQuantityChange(product, -1)}*/}
+                  {/*                  >*/}
+                  {/*                      -*/}
+                  {/*                  </button>*/}
+                  {/*                  <span className="quantity-display">*/}
+                  {/*                      {getItemInCart(product.id).quantity}*/}
+                  {/*                  </span>*/}
+                  {/*                  <button*/}
+                  {/*                      className="quantity-btn increase"*/}
+                  {/*                      onClick={() => handleQuantityChange(product, 1)}*/}
+                  {/*                  >*/}
+                  {/*                      +*/}
+                  {/*                  </button>*/}
+                  {/*              </div>*/}
+                  {/*          ) : (*/}
+                  {/*              <button*/}
+                  {/*                      className="flash-btn add-to-cart-btn"*/}
+                  {/*                  onClick={() => handleAddToCart(product)}*/}
+                  {/*                  disabled={!product.inStock}*/}
+                  {/*              >*/}
+                  {/*                  <ShoppingCart size={14} />*/}
+                  {/*                  Add to Cart*/}
+                  {/*              </button>*/}
+                  {/*          )}      */}
+                  {/*          <button className="flash-btn buy-now-btn" onClick={() => handleBuyNow(product)} disabled={product.stock > 0}>🛍️ BUY NOW</button>*/}
+                        {/*</div>*/}
+                        <div className="product-buttons">
+
+                            {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (
+                                <div className="quantity-selector">
+                                    <button
+                                        className="quantity-btn decrease"
+                                        onClick={() => handleQuantityChange(product, -1)}
+                                    >
+                                        -
+                                    </button>
+                                    <span className="quantity-display">
+                                        {getItemInCart(product.id).quantity}
+                                    </span>
+                                    <button
+                                        className="quantity-btn increase"
+                                        onClick={() => handleQuantityChange(product, 1)}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    className="new-btn new-add-cart"
+                                    onClick={() => handleAddToCart(product)}
+                                    disabled={product.stock === 0}
+                                >
+                                    <ShoppingCart size={14} />
+                                    Add to Cart
+                                </button>
+                            )}
+                            <button className="new-btn new-buy-now" onClick={() => handleBuyNow(product)} disabled={product.stock === 0}>🛍️ BUY NOW</button>
+                        </div>
                 </div>
               </div>
             ))}

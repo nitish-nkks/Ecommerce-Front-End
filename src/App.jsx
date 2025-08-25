@@ -368,6 +368,7 @@ function App() {
             onWishlistToggle={handleWishlistToggle}
             onAddToCart={addToCart}
             cartItems={cartItems}
+            onNavigate={handleNavigate}
           />
         );
       case 'products':

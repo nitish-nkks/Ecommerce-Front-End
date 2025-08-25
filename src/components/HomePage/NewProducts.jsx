@@ -681,13 +681,7 @@ const NewProducts = ({ products = [], wishlistItems = [], onWishlistToggle, onAd
                               )}
                           </div>
                     <div className="new-product-buttons">
-                      {/*<button */}
-                      {/*  className="new-btn new-add-cart"*/}
-                      {/*  onClick={() => handleAddToCart(product)}*/}
-                      {/*  title="Add to Cart"*/}
-                      {/*>*/}
-                      {/*  <ShoppingCart size={12} /> ADD TO CART*/}
-                      {/*        </button>*/}
+                     
                               {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (
                                   <div className="quantity-selector">
                                       <button
