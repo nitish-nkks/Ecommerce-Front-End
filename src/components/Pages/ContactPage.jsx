@@ -216,6 +216,7 @@ const ContactPage = () => {
           position: relative;
           z-index: 2;
           overflow: hidden;
+          margin-top: 150px;
         }
 
         .contact-header::before {

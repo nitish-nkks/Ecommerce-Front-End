@@ -61,6 +61,7 @@ const BannerCarousel = () => {
           height: 200px;
           overflow: hidden;
           background: #f1f5f9;
+          margin-top: 150px;
         }
 
         .banner-wrapper {

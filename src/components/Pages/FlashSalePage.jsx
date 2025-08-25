@@ -184,6 +184,7 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
           background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 20%, #f1f5f9 100%);
           padding: 20px;
           position: relative;
+          margin-top: 100px;
         }
 
         .flash-sale-page::before {

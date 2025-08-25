@@ -89,6 +89,7 @@ const TechnicalGuidancePage = () => {
           color: white;
           padding: 60px 0;
           text-align: center;
+          margin-top: 150px;
         }
 
         .guidance-content {

@@ -75,6 +75,7 @@ const AboutPage = () => {
           text-align: left;
           position: relative;
           overflow: hidden;
+          margin-top: 60px;
         }
 
         .about-content {

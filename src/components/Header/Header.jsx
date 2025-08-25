@@ -328,7 +328,8 @@ const Header = ({ onLoginClick, onNavigate, currentView, onCategoryClick, onWish
 
         .header-container {
           width: 100%;
-          position: sticky;
+         // position: sticky;
+          position: fixed;
           top: 0;
           z-index: 1000;
           background: white;
@@ -346,7 +347,7 @@ const Header = ({ onLoginClick, onNavigate, currentView, onCategoryClick, onWish
           width: 100%;
           max-width: 100vw;
           margin: 0;
-          overflow-x: hidden;
+          overflow-x: visible;
         }
 
         .top-bar-content {

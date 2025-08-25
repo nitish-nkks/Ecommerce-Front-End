@@ -177,6 +177,7 @@ const BlogsPage = () => {
         .blogs-container {
           min-height: 100vh;
           background: #f9fafb;
+          margin-top: 150px;
         }
 
         .blogs-header {

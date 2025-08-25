@@ -402,13 +402,9 @@ export const getAllBrands = () => {
 };
 
 // Get popular search terms
-export const getPopularSearches = () => [
-  "Antibiotic",
-  "Calcium",
+export const getPopularSearches = () => [ 
   "Poultry Feed",
   "Fish Feed",
-  "Vitamins",
-  "Growth Promoter",
-  "Cattle Feed",
-  "Probiotics"
+  "Shrimp Feed",
+  "Starter Feed"
 ];
