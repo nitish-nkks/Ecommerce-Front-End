@@ -25,7 +25,7 @@ import OrderHistoryPage from './components/Pages/OrderHistoryPage';
 import OrderTrackingPage from './components/Pages/OrderTrackingPage';
 import CartModal from './components/CartModal/CartModal';
 import OrderSuccessModal from './components/OrderSuccessModal/OrderSuccessModal';
-import { addToCart as addToCartApi, getCartItems } from './api/api';
+import { addToCart as addToCartApi, getCartItems, updateCartQuantity, removeCartItem, clearCart as clearCartApi} from './api/api';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 function App() {
@@ -238,28 +238,86 @@ function App() {
     }
   };
 
-  const updateCartItemQuantity = (productId, newQuantity) => {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
+  //const updateCartItemQuantity = (productId, newQuantity) => {
+  //  if (newQuantity <= 0) {
+  //    removeFromCart(productId);
+  //    return;
+  //  }
     
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === productId
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
-  };
+  //  setCartItems(prev =>
+  //    prev.map(item =>
+  //      item.id === productId
+  //        ? { ...item, quantity: newQuantity }
+  //        : item
+  //    )
+  //  );
+  //};
 
-  const removeFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
-  };
+  //const removeFromCart = (productId) => {
+  //  setCartItems(prev => prev.filter(item => item.id !== productId));
+  //};
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  //const clearCart = () => {
+  //  setCartItems([]);
+  //};
+    const updateCartItemQuantity = async (productId, newQuantity) => {
+        try {
+            if (newQuantity <= 0) {
+                await removeCartItem(productId);
+                setCartItems(prev => prev.filter(item => item.id !== productId));
+                //toast.success("Item removed from cart");
+                return;
+            }
+
+            const res = await updateCartQuantity(productId, newQuantity);
+
+            if (res.data.success) {
+                setCartItems(prev =>
+                    prev.map(item =>
+                        item.id === productId ? { ...item, quantity: newQuantity } : item
+                    )
+                );
+               // toast.success(res.data.message);
+            } else {
+                //toast.error(res.data.message || "Failed to update quantity");
+            }
+        } catch (err) {
+            console.error("Update cart error:", err);
+            //toast.error(err.response?.data?.message || "Something went wrong");
+        }
+    };
+
+    const removeFromCart = async (productId) => {
+        try {
+            const res = await removeCartItem(productId);
+
+            if (res.data.success) {
+                setCartItems(prev => prev.filter(item => item.id !== productId));
+                //toast.success(res.data.message);
+            } else {
+                //toast.error(res.data.message || "Failed to remove item");
+            }
+        } catch (err) {
+            console.error("Remove cart error:", err);
+            //toast.error(err.response?.data?.message || "Something went wrong");
+        }
+    };
+
+    const clearCart = async (userId) => {
+        try {
+            const res = await clearCartApi(userId);
+
+            if (res.data.success) {
+                setCartItems([]);
+                //toast.success(res.data.message);
+            } else {
+                //toast.error(res.data.message || "Failed to clear cart");
+            }
+        } catch (err) {
+            console.error("Clear cart error:", err);
+            //toast.error(err.response?.data?.message || "Something went wrong");
+        }
+    };
 
   const getCartTotal = () => {
         return cartItems.reduce((total, item) => {

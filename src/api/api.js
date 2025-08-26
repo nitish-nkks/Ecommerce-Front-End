@@ -39,8 +39,26 @@ export const getCartItems = (userId) => {
     return axiosInstance.get(`/CartItem/${userId}`);
 };
 
-
-//dummy
 export const addToCart = (data) => {
   return axiosInstance.post("/CartItem", data);
+};
+
+export const updateCartQuantity = (id, quantity) => {
+    return axiosInstance.put(
+        `/CartItem/${id}`,
+        { quantity }, // send in body
+        {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+        }
+    );
+};
+
+export const removeCartItem = (id) => {
+    return axiosInstance.delete(`/CartItem/${id}`);
+};
+
+export const clearCart = (userId) => {
+    return axiosInstance.delete(`/CartItem/clear/${userId}`);
 };
