@@ -1,4 +1,4 @@
-// src/App.jsx
+﻿// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Header from './components/Header/Header';
@@ -28,6 +28,13 @@ import OrderSuccessModal from './components/OrderSuccessModal/OrderSuccessModal'
 import { addToCart as addToCartApi, getCartItems, updateCartQuantity, removeCartItem, clearCart as clearCartApi} from './api/api';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+} from "@mui/material";
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [language, setLanguage] = useState('en');
@@ -339,10 +346,14 @@ function App() {
     setShowCartModal(true);
   };
 
+  const [warningOpen, setWarningOpen] = useState(false);
+
   const handleCheckout = () => {
     if (!user) {
-      setCurrentView('login');
-      updateURL('login');
+        setWarningOpen(true); 
+        setShowCartModal(false);
+      //setCurrentView('login');
+      //updateURL('login');
     } else {
       setCurrentView('checkout');
       setShowCartModal(false);
@@ -657,6 +668,27 @@ function App() {
           handleNavigate('home');
         }}
       />
+
+          {/* Login Required Dialog */}
+          <Dialog open={warningOpen} onClose={() => setWarningOpen(false)}>
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogContent>
+                  Login is required to proceed with buying this product.
+              </DialogContent>
+              <DialogActions>
+                  <Button onClick={() => setWarningOpen(false)}>Cancel</Button>
+                  <button
+                      className="new-btn new-add-cart"
+                      onClick={() => {
+                          setWarningOpen(false);
+                          updateURL("login");
+                          setCurrentView("login");
+                      }}
+                  >
+                      🔑 LOGIN
+                  </button>
+              </DialogActions>
+          </Dialog>
     </div>
   );
 }

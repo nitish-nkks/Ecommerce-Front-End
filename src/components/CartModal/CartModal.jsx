@@ -481,7 +481,8 @@ const CartModal = ({
           </div>
         )}
       </div>
-    </div>
+      </div>
+
   );
 };
 
