@@ -243,7 +243,7 @@ function App() {
   //    removeFromCart(productId);
   //    return;
   //  }
-    
+
   //  setCartItems(prev =>
   //    prev.map(item =>
   //      item.id === productId
@@ -259,9 +259,12 @@ function App() {
 
   //const clearCart = () => {
   //  setCartItems([]);
-  //};
+    //};
+
     const updateCartItemQuantity = async (productId, newQuantity) => {
         try {
+            const guestId = localStorage.getItem('guestId');
+            console.log('Updating cart item:', productId, 'to quantity:', newQuantity, 'guestId:', guestId);
             if (newQuantity <= 0) {
                 await removeCartItem(productId);
                 setCartItems(prev => prev.filter(item => item.id !== productId));
@@ -269,9 +272,9 @@ function App() {
                 return;
             }
 
-            const res = await updateCartQuantity(productId, newQuantity);
+            const res = await updateCartQuantity(productId, newQuantity, guestId);
 
-            if (res.data.success) {
+            if (res.data?.success) {
                 setCartItems(prev =>
                     prev.map(item =>
                         item.id === productId ? { ...item, quantity: newQuantity } : item
@@ -289,33 +292,35 @@ function App() {
 
     const removeFromCart = async (productId) => {
         try {
-            const res = await removeCartItem(productId);
+            const guestId = localStorage.getItem('guestId');
+            const res = await removeCartItem(productId, guestId);
 
             if (res.data.success) {
                 setCartItems(prev => prev.filter(item => item.id !== productId));
-                //toast.success(res.data.message);
+                // toast.success(res.data.message);
             } else {
-                //toast.error(res.data.message || "Failed to remove item");
+                // toast.error(res.data.message || "Failed to remove item");
             }
         } catch (err) {
             console.error("Remove cart error:", err);
-            //toast.error(err.response?.data?.message || "Something went wrong");
+            // toast.error(err.response?.data?.message || "Something went wrong");
         }
     };
 
-    const clearCart = async (userId) => {
+    const clearCart = async () => {
         try {
-            const res = await clearCartApi(userId);
+            const guestId = localStorage.getItem('guestId');
+            const res = await clearCartApi(guestId);
 
             if (res.data.success) {
                 setCartItems([]);
-                //toast.success(res.data.message);
+                // toast.success(res.data.message);
             } else {
-                //toast.error(res.data.message || "Failed to clear cart");
+                // toast.error(res.data.message || "Failed to clear cart");
             }
         } catch (err) {
             console.error("Clear cart error:", err);
-            //toast.error(err.response?.data?.message || "Something went wrong");
+            // toast.error(err.response?.data?.message || "Something went wrong");
         }
     };
 

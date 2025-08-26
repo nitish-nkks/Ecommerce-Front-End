@@ -43,22 +43,47 @@ export const addToCart = (data) => {
   return axiosInstance.post("/CartItem", data);
 };
 
-export const updateCartQuantity = (id, quantity) => {
-    return axiosInstance.put(
-        `/CartItem/${id}`,
-        { quantity }, // send in body
-        {
+//export const updateCartQuantity = (id, quantity) => {
+//    return axiosInstance.put(
+//        `/CartItem/${id}`,
+//        { quantity }, // send in body
+//        {
+//            headers: {
+//                Authorization: `Bearer ${localStorage.getItem("token")}`,
+//            },
+//        }
+//    );
+//};
+
+export const updateCartQuantity = async (productId, quantity, guestId = null) => {
+    try {
+        const payload = {
+            productId,
+            quantity,
+            guestId
+        };
+
+        const response = await axiosInstance.put(`/CartItem`, payload, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`, // if logged in
             },
-        }
-    );
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Error updating cart:", error);
+        throw error.response?.data || error;
+    }
 };
 
-export const removeCartItem = (id) => {
-    return axiosInstance.delete(`/CartItem/${id}`);
+export const removeCartItem = (id, guestId) => {
+    return axiosInstance.delete(`/CartItem/${id}`, {
+        params: { guestId }
+    });
 };
 
-export const clearCart = (userId) => {
-    return axiosInstance.delete(`/CartItem/clear/${userId}`);
+export const clearCart = (guestId) => {
+    return axiosInstance.delete(`/CartItem/clear`, {
+        params: { guestId }, 
+    });
 };
