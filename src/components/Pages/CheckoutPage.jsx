@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { ArrowLeft, CreditCard, Truck, Shield, MapPin } from "lucide-react";
-import { updateCustomerAddress } from "../../api/api";
+import { updateCustomerAddress, postOrder } from "../../api/api";
+import { toast } from "react-toastify";
 
-const normalizeAddressArray = (res) => {
+const normalizeAddressArray = (res) => { 
   const data = res?.data;
   if (!data) return [];
   const maybe = data.data ?? data;
@@ -12,7 +13,7 @@ const normalizeAddressArray = (res) => {
   return [];
 };
 
-const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced }) => {
+const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced }) => { 
   const [isEditing, setIsEditing] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -128,10 +129,10 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
     setIsPlacingOrder(true);
     setMessage(null);
     try {
-      const payload = {
+        const payload = {
         CustomerAddressId: orderPayload.CustomerAddressId,
         PaymentMethod: orderPayload.PaymentMethod,
-      };
+            };
       const res = await axiosInstance.post("/Orders", payload);
       if (res.data?.success) {
         setMessage({ type: "success", text: "Order placed successfully." });
@@ -285,7 +286,34 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
       zipCode: addr.zipCode,
     });
     setShowAddForm(true);
-  };
+    };
+
+    const handlePlaceOrder = async (e) => {
+        e.preventDefault();
+        setIsPlacingOrder(true);
+        const payload = {
+            customerAddressId: selectedAddressId,
+            paymentMethod: formData.paymentMethod,
+            cartItems: cartItems
+        };
+        try {
+            const res = await postOrder(payload);
+            console.log("Order Response:", res);
+
+            if (res?.data?.success) {
+                console.log("onOrderPlaced:", onOrderPlaced);
+                if (onOrderPlaced) onOrderPlaced(res);              
+            } else {
+                toast.error(res?.data?.message || "Failed to place order. Please try again.");
+            }
+        } catch (err) {
+            console.error("Order Error:", err);
+            toast.error(err.response?.data?.message || "Something went wrong. Please try again.");
+        } finally {
+            setIsPlacingOrder(false);
+        }
+    };
+
   return (
     <div className="checkout-page">
       <style jsx>{`
@@ -875,8 +903,8 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
                   <div className="price-row"><span className="price-label">Tax (GST 18%):</span><span className="price-value">₹{tax.toFixed(2)}</span></div>
                   <div className="price-row"><span className="price-label">Total:</span><span className="price-value">₹{total.toFixed(2)}</span></div>
                 </div>
-                {message && <div style={{ marginTop: 12, color: message.type === "error" ? "red" : "green" }}>{message.text}</div>}
-                <button type="submit" className="submit-btn" disabled={cartItems.length === 0 || isPlacingOrder || isAddingAddress}>
+                  {message && <div style={{ marginTop: 12, color: message.type === "error" ? "red" : "green" }}>{message.text}</div>}
+                  <button type="submit" className="submit-btn" onClick={handlePlaceOrder} disabled={cartItems.length === 0 || isPlacingOrder || isAddingAddress}>
                   <CreditCard size={20} />
                   {isPlacingOrder ? `Placing order...` : `Place Order - ₹${total.toFixed(2)}`}
                 </button>

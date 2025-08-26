@@ -25,8 +25,9 @@ import OrderHistoryPage from './components/Pages/OrderHistoryPage';
 import OrderTrackingPage from './components/Pages/OrderTrackingPage';
 import CartModal from './components/CartModal/CartModal';
 import OrderSuccessModal from './components/OrderSuccessModal/OrderSuccessModal';
-import { addToCart as addToCartApi } from './api/api';
-
+import { addToCart as addToCartApi, getCartItems } from './api/api';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [language, setLanguage] = useState('en');
@@ -50,6 +51,12 @@ function App() {
       localStorage.setItem('guestId', uuidv4());
     }
   }, []);
+
+    useEffect(() => {
+        if (user && user.id) {
+            fetchCartItems(user.id);
+        }
+    }, [user]);
 
   // Mobile splash screen effect
   useEffect(() => {
@@ -189,7 +196,16 @@ function App() {
     }
   };
 
-  // Cart management functions
+    // Cart management functions
+    const fetchCartItems = async () => {
+        try {
+            const response = await getCartItems(user.id);
+            setCartItems(response.data?.data); // assuming API returns cart array
+        } catch (error) {
+            console.error("Error fetching cart items:", error);
+        }
+    };
+
   const addToCart = async (product, quantity = 1) => {
     const guestId = localStorage.getItem('guestId');
     try {
@@ -510,7 +526,7 @@ function App() {
           }
         }
       `}</style>
-
+      <ToastContainer position="top-right" autoClose={2000} />
       {/* Mobile Splash Screen */}
       {showSplashScreen && (
         <div className="splash-screen">

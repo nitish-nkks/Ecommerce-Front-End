@@ -31,6 +31,15 @@ export const getParentCategories = () => axiosInstance.get('/Categories/list');
 
 export const getFlashSales = () => axiosInstance.get('/FlashSale/active');
 
+export const postOrder = (data) => {
+    return axiosInstance.post(`/Order`, data);
+};
+
+export const getCartItems = (userId) => {
+    return axiosInstance.get(`/CartItem/${userId}`);
+};
+
+
 //dummy
 export const addToCart = (data) => {
   return axiosInstance.post("/CartItem", data);

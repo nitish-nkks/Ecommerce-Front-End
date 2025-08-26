@@ -833,7 +833,8 @@ const ContactPage = () => {
       {/* Header */}
       <div className="contact-header">
         <div className="contact-content">
-          <h1 className="contact-title">Contact Us</h1>
+                  <h1 className="contact-title">
+                  </h1>
           <p className="contact-subtitle">
             Get in touch with our experts for personalized feed solutions and technical support
           </p>

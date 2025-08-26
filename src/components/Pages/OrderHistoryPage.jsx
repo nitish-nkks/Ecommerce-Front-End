@@ -113,6 +113,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
           min-height: 100vh;
           background: #eaeded;
           font-family: "Amazon Ember", Arial, sans-serif;
+           margin-top: 60px;
         }
 
         .container {
@@ -1328,7 +1329,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                             )}
                           </div>
                         </div>
-                        <div className="modal-item-price">₹{(item.price * item.quantity).toFixed(2)}</div>
+                        <div className="modal-item-price">₹{(item.price * item.quantity)?.toFixed(2)}</div>
                       </div>
                     ))}
                   </div>
@@ -1343,7 +1344,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                     </div>
                     <div className="total-row order-total-row">
                       <span>Grand Total:</span>
-                      <span>₹{selectedOrder.total.toFixed(2)}</span>
+                      <span>₹{selectedOrder.total?.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
