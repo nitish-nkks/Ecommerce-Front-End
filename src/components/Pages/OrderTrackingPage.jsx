@@ -215,7 +215,8 @@ const OrderTrackingPage = ({ onNavigate, trackingNumber }) => {
 
         .main-content {
           max-width: 1200px;
-          margin: 0 auto;
+          margin-top: 80px;
+          //margin: 0 auto;
           padding: 20px;
         }
 

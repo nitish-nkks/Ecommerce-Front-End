@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle, Package, Eye, Home } from 'lucide-react';
 
 const OrderSuccessModal = ({ isOpen, onClose, orderData, onViewOrderHistory, onGoHome }) => {
-  const REDIRECT_DELAY = 5; // seconds
+  const REDIRECT_DELAY = 10; // seconds
   const [countdown, setCountdown] = useState(REDIRECT_DELAY);
 
   useEffect(() => {

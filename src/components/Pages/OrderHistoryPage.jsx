@@ -1,14 +1,40 @@
 // src/components/Pages/OrderHistoryPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, Calendar, Truck, CheckCircle, Clock, Eye, Download, ArrowLeft, Search, Filter, Star, ChevronDown, RotateCcw } from 'lucide-react';
+import { getCustomerOrders} from "../../api/api";
 
-const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('all');
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderDetails, setShowOrderDetails] = useState(false);
+const OrderHistoryPage = ({ onNavigate, orders: incomingOrders = [] }) => {
+    const [orders, setOrders] = useState(incomingOrders);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [dateFilter, setDateFilter] = useState('all');
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showOrderDetails, setShowOrderDetails] = useState(false);
+    const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        // ✅ only fetch if incoming orders are empty
+        if (incomingOrders.length === 0) {
+            const fetchOrders = async () => {
+                try {
+                    setLoading(true);
+                    const res = await getCustomerOrders(4); // replace 4 with actual userId
+                    if (res.data.success) {
+                        setOrders(res.data.data);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch orders:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            fetchOrders();
+        }
+    }, [incomingOrders]);
+
+
+    console.log('orders: ', orders);
   // Mock orders data if none provided
   const mockOrders = orders.length > 0 ? orders : [
     {
@@ -84,8 +110,12 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
   };
 
   const filteredOrders = mockOrders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch =
+          order.id.toString().includes(searchTerm.toLowerCase()) ||
+          (order.items && order.items.some(item =>
+              item.name?.toLowerCase().includes(searchTerm.toLowerCase())
+          ));
+
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesDate = dateFilter === 'all' || 
                        (dateFilter === 'last30' && new Date(order.date) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) ||
@@ -104,7 +134,9 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
 
   const handleTrackOrder = (trackingNumber) => {
     onNavigate('order-tracking', { trackingNumber });
-  };
+    };
+
+  if (loading) return <p>Loading orders...</p>;
 
   return (
     <div className="order-history-page">
@@ -1118,7 +1150,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                     <div className="order-header">
                       <div className="order-header-item">
                         <div className="order-header-label">ORDER PLACED</div>
-                        <div className="order-header-value">{formatDate(order.date)}</div>
+                        <div className="order-header-value">{order.date}</div>
                       </div>
                       <div className="order-header-item">
                         <div className="order-header-label">TOTAL</div>
@@ -1126,15 +1158,14 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                       </div>
                       <div className="order-header-item">
                         <div className="order-header-label">SHIP TO</div>
-                        <div className="order-header-value">{order.shippingAddress.split(',')[0]}</div>
+                        <div className="order-header-value">{order.shippingAddress}</div>
                       </div>
                       <div className="order-header-item">
                         <div className="order-header-label">ORDER #{order.id}</div>
-                        <div className="order-header-value">
-                          <a href="#" className="order-id-value">View order details</a>
+                        <div className="order-header-value">                         
                           {order.trackingNumber && (
                             <div style={{fontSize: '11px', color: '#565959', marginTop: '2px'}}>
-                              Track: {order.trackingNumber}
+                                Tracking Number: {order.trackingNumber}                              
                             </div>
                           )}
                         </div>
@@ -1143,36 +1174,43 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
 
                     <div className="order-body">
                       {/* Delivery Status */}
-                      <div className={`order-delivery-info ${order.status}`}>
-                        {order.status === 'delivered' && (
+                        <div className={`order-delivery-info ${order.status}`}>
+                       
+                        {order.status === 'Delivered' && (
                           <>
                             <CheckCircle size={18} />
-                            Delivered {formatDate(order.date)}
+                            Delivered {order.date}
                           </>
                         )}
-                        {order.status === 'shipped' && (
+                        {order.status.toLowerCase() === 'shipped' && (
                           <>
                             <Truck size={18} />
                             Shipped - Arriving {order.estimatedDelivery ? formatDate(order.estimatedDelivery) : 'soon'}
                           </>
                         )}
-                        {order.status === 'processing' && (
+                        {order.status === 'Processing' && (
                           <>
                             <Clock size={18} />
                             Preparing for shipment
                           </>
                         )}
-                        {order.status === 'cancelled' && (
+                        {order.status === 'Cancelled' && (
                           <>
                             <Package size={18} />
                             Order cancelled
                           </>
                         )}
+                        {order.status && (
+                          <>
+                            <CheckCircle size={18} />
+                            {order.status}
+                          </>
+                        )}           
                       </div>
 
                       {/* Order Items */}
                       <div className="order-items">
-                        {order.items.slice(0, 3).map((item, index) => (
+                        {order.orderItems?.slice(0, 3).map((item, index) => (
                           <div key={index} className="order-item">
                             <div className="item-image">
                               <Package size={20} color="#565959" />
@@ -1186,9 +1224,9 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                             <div className="item-price">₹{(item.price * item.quantity).toFixed(2)}</div>
                           </div>
                         ))}
-                        {order.items.length > 3 && (
+                        {order.orderItems?.length > 3 && (
                           <div className="more-items">
-                            +{order.items.length - 3} more items
+                            +{order.orderItems.length - 3} more items
                           </div>
                         )}
                       </div>
@@ -1277,7 +1315,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                   <div className="info-grid">
                     <div className="info-item">
                       <label>Order placed</label>
-                      <span>{formatDate(selectedOrder.date)}</span>
+                      <span>{selectedOrder.date}</span>
                     </div>
                     <div className="info-item">
                       <label>Order #</label>
@@ -1307,7 +1345,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                 <div className="ordered-items-section">
                   <h3 className="section-title">Items in this order</h3>
                   <div className="items-list">
-                    {selectedOrder.items.map((item, index) => (
+                    {selectedOrder.orderItems.map((item, index) => (
                       <div key={index} className="modal-item">
                         <div className="modal-item-image">
                           <Package size={24} color="#565959" />
@@ -1335,7 +1373,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                   </div>
                   <div className="modal-total">
                     <div className="total-row">
-                      <span>Items ({selectedOrder.items.reduce((sum, item) => sum + item.quantity, 0)}):</span>
+                      <span>Items ({selectedOrder.orderItems.reduce((sum, item) => sum + item.quantity, 0)}):</span>
                       <span>₹{(selectedOrder.total - 49).toFixed(2)}</span>
                     </div>
                     <div className="total-row">
@@ -1350,7 +1388,7 @@ const OrderHistoryPage = ({ onNavigate, orders = [] }) => {
                 </div>
               </div>
               <div className="modal-footer">
-                {selectedOrder.trackingNumber && (selectedOrder.status === 'shipped' || selectedOrder.status === 'delivered') && (
+                {selectedOrder.trackingNumber && (selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered') && (
                   <button 
                     className="action-btn btn-primary"
                     onClick={() => {

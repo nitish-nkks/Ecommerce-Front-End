@@ -362,18 +362,20 @@ function App() {
   };
 
   const handleOrderPlaced = (orderData) => {
+      console.log('handle order placed with data:', orderData);
+      console.log('cartItems placed with data:', cartItems);
     // Create new order
     const newOrder = {
-      id: 'ORD-' + Date.now().toString().slice(-6),
-      date: new Date().toISOString().split('T')[0],
-      status: 'processing',
-      items: cartItems.map(item => ({
+        id: 'ORD-' + Date.now().toString().slice(-6),
+        date: orderData.date,
+      status: 'Order Placed',
+        orderItems: cartItems.map(item => ({
         name: item.name,
         quantity: item.quantity,
         price: item.price
       })),
       total: orderData.total,
-      shippingAddress: `${orderData.city}, ${orderData.state}`,
+      shippingAddress: orderData.shippingAddress,
       paymentMethod: orderData.paymentMethod === 'card' ? 'Card ending in 1234' : 'Cash on Delivery',
       trackingNumber: 'TRK' + Date.now().toString().slice(-9)
     };
@@ -388,7 +390,7 @@ function App() {
       itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0)
     });
 
-    // Clear cart
+    //Clear cart
     clearCart();
 
     // Show success modal

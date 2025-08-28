@@ -43,18 +43,6 @@ export const addToCart = (data) => {
   return axiosInstance.post("/CartItem", data);
 };
 
-//export const updateCartQuantity = (id, quantity) => {
-//    return axiosInstance.put(
-//        `/CartItem/${id}`,
-//        { quantity }, // send in body
-//        {
-//            headers: {
-//                Authorization: `Bearer ${localStorage.getItem("token")}`,
-//            },
-//        }
-//    );
-//};
-
 export const updateCartQuantity = async (productId, quantity, guestId = null) => {
     try {
         const payload = {
@@ -86,4 +74,12 @@ export const clearCart = (guestId) => {
     return axiosInstance.delete(`/CartItem/clear`, {
         params: { guestId }, 
     });
+};
+
+export const getCustomerOrders = async () => {
+    return axiosInstance.get(`/Order/user`);    
+};
+
+export const getOrderById = async (id) => {
+    return axiosInstance.get(`/Order/${id}`);
 };

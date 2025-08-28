@@ -51,7 +51,7 @@ const WishlistPage = ({ wishlistItems = [], onRemoveFromWishlist, onWishlistTogg
     return cartItems.find(item => item.id === itemId);
   };
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+    <div style={{ minHeight: '100vh', background: '#f9fafb', marginTop: '120px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
         <div style={{ 
           display: 'flex', 

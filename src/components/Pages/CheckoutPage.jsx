@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { ArrowLeft, CreditCard, Truck, Shield, MapPin } from "lucide-react";
-import { updateCustomerAddress, postOrder } from "../../api/api";
+import { updateCustomerAddress, postOrder, getOrderById } from "../../api/api";
 import { toast } from "react-toastify";
 
 const normalizeAddressArray = (res) => { 
@@ -270,8 +270,14 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
         CustomerAddressId: Number(shippingAddress.id),
         PaymentMethod: formData.paymentMethod,
       };
-      const result = await placeOrderAsync(orderPayload);
-      if (onOrderPlaced) onOrderPlaced(result);
+        const result = await placeOrderAsync(orderPayload);
+        if (result.data.success) {
+            const orderId = result.data.orderId;
+            const orderRes = await getOrderById(orderId);
+            const newOrder = orderRes.data; // assuming API returns in frontend structure
+            if (onOrderPlaced) onOrderPlaced(orderRes);
+        }
+      
     } catch (err) {
       console.error(err);
     }
@@ -301,8 +307,11 @@ const CheckoutPage = ({ cartItems = [], onNavigate, getCartTotal, onOrderPlaced 
             console.log("Order Response:", res);
 
             if (res?.data?.success) {
+                const orderId = res.data.orderId;
+                const orderRes = await getOrderById(orderId);
+                console.log("Fetched Order Details:", orderRes);
                 console.log("onOrderPlaced:", onOrderPlaced);
-                if (onOrderPlaced) onOrderPlaced(res);              
+                if (onOrderPlaced) onOrderPlaced(orderRes.data.data);              
             } else {
                 toast.error(res?.data?.message || "Failed to place order. Please try again.");
             }

@@ -14,14 +14,26 @@ const CartModal = ({
 }) => {
     if (!isOpen) return null;
     console.log('Cart Items:', cartItems);
-  const handleQuantityChange = (itemId, change) => {
-    const item = cartItems.find(item => item.id === itemId);
-    if (item) {
-      const newQuantity = item.quantity + change;
-      onUpdateQuantity(itemId, newQuantity);
-    }
-  };
+  //const handleQuantityChange = (itemId, change) => {
+  //  const item = cartItems.find(item => item.id === itemId);
+  //  if (item) {
+  //    const newQuantity = item.quantity + change;
+  //    onUpdateQuantity(itemId, newQuantity);
+  //  }
+  //};
+    const handleQuantityChange = (itemId, change) => {
+        const item = cartItems.find(item => item.id === itemId);
+        const minQty = item.minOrderQuantity || 1;
+        const stockQty = item.stock;
 
+        const newQuantity = item.quantity + change;
+
+        console.log('Current quantity:', item.quantity, 'newQty:', newQuantity, 'stockQty: ', stockQty);
+
+        if (newQuantity < minQty) return;
+        if (stockQty < newQuantity) return;
+        onUpdateQuantity(itemId, newQuantity);
+    };
   return (
     <div className={`cart-modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
       <style jsx>{`
