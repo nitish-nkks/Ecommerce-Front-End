@@ -4,7 +4,7 @@ import { createProductCartAnimation } from '../../utils/cartAnimation';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
 
-const NewProducts = ({ products = [], wishlistItems = [], onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
+const NewProducts = ({ products = [], wishlistItems = [], onWishlistToggle, onAddToCart, updateCartItemQuantity, cartItems, onNavigate }) => {
   const [newProductsSlide, setNewProductsSlide] = useState(0);
 
   const isInWishlist = (productId) => {
@@ -41,6 +41,23 @@ const NewProducts = ({ products = [], wishlistItems = [], onWishlistToggle, onAd
         }
     };
 
+    //const handleQuantityChange = (product, change) => {
+    //    const minQty = product.minOrderQuantity || 1;
+    //    const stockQty = product.stock;
+
+    //    const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+    //    const newQty = currentQty + change;
+
+    //    console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty);
+
+    //    if (newQty < minQty) return;
+    //    if (stockQty < newQty) return;
+
+    //    if (onAddToCart) {
+    //        onAddToCart(product, change);
+    //    }
+    //};
     const handleQuantityChange = (product, change) => {
         const minQty = product.minOrderQuantity || 1;
         const stockQty = product.stock;
@@ -53,10 +70,9 @@ const NewProducts = ({ products = [], wishlistItems = [], onWishlistToggle, onAd
 
         if (newQty < minQty) return;
         if (stockQty < newQty) return;
+        console.log("Updating cart item quantity:", product.id, newQty);
 
-        if (onAddToCart) {
-            onAddToCart(product, change);
-        }
+        updateCartItemQuantity(product.id, newQty);
     };
 
   const getItemInCart = (productId) => {

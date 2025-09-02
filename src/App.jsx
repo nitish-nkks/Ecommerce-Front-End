@@ -459,6 +459,7 @@ function App() {
             wishlistItems={wishlistItems} 
             onWishlistToggle={handleWishlistToggle}
             onAddToCart={addToCart}
+            onUpdateQuantity={updateCartItemQuantity}
             cartItems={cartItems}
             onNavigate={handleNavigate}
           />
@@ -471,7 +472,8 @@ function App() {
             selectedSubsubcategory={selectedSubsubcategory?.name}
             wishlistItems={wishlistItems}
             onWishlistToggle={handleWishlistToggle}
-            onAddToCart={addToCart}
+            onAddToCart={addToCart}           
+            onUpdateQuantity={updateCartItemQuantity}
             cartItems={cartItems}
             onNavigate={handleNavigate}
           />
@@ -542,8 +544,9 @@ function App() {
             wishlistItems={wishlistItems} 
             onWishlistToggle={handleWishlistToggle}
             onAddToCart={addToCart}
-                        cartItems={cartItems}
-                        onNavigate={handleNavigate}
+            onUpdateQuantity={updateCartItemQuantity}
+            cartItems={cartItems}
+            onNavigate={handleNavigate}
           />
         );
     }

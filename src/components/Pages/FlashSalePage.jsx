@@ -4,7 +4,7 @@ import { createProductCartAnimation } from '../../utils/cartAnimation';
 import { getCategories, getFlashSales } from '../../api/api';
 import dayjs from "dayjs";
 
-const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cartItems = [], onNavigate }) => {
+const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, onUpdateQuantity, cartItems = [], onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
@@ -114,7 +114,7 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
   //};
 
     const handleAddToCart = (product) => {
-        console.log("cartItems: ", cartItems);
+        console.log("cartItems: ", cartItems, "product: ", product);
         const minQty = product.minOrderQuantity || 1;
         if (onAddToCart) {
             onAddToCart(product, minQty);
@@ -133,6 +133,23 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
   //  }
   //};
 
+    //const handleQuantityChange = (product, change) => {
+    //    const minQty = product.minOrderQuantity || 1;
+    //    const stockQty = product.stock;
+
+    //    const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+    //    const newQty = currentQty + change;
+
+    //    console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty, 'minOrder: ', product.minOrderQuantity);
+
+    //    if (newQty < minQty) return;
+    //    if (stockQty < newQty) return;
+
+    //    if (onAddToCart) {
+    //        onAddToCart(product, change);
+    //    }
+    //};
     const handleQuantityChange = (product, change) => {
         const minQty = product.minOrderQuantity || 1;
         const stockQty = product.stock;
@@ -141,14 +158,13 @@ const FlashSalePage = ({ wishlistItems = [], onWishlistToggle, onAddToCart, cart
 
         const newQty = currentQty + change;
 
-        console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty, 'minOrder: ', product.minOrderQuantity);
+        console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty);
 
         if (newQty < minQty) return;
         if (stockQty < newQty) return;
+        console.log("Updating cart item quantity:", product.id, newQty);
 
-        if (onAddToCart) {
-            onAddToCart(product, change);
-        }
+        onUpdateQuantity(product.id, newQty);
     };
 
   const getItemInCart = (productId) => {

@@ -5,7 +5,7 @@ import ProductDetailsModal from './ProductDetailsModal';
 import { getParentCategories, getProducts } from '../../api/api';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
-const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory = null, selectedSubcategory = null, selectedSubsubcategory = null, onAddToCart, cartItems = [], onNavigate }) => {
+const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory = null, selectedSubcategory = null, selectedSubsubcategory = null, onAddToCart, onUpdateQuantity, cartItems = [], onNavigate }) => {
   // Log props to debug
   console.log('ProductsPage props:', { selectedCategory, selectedSubcategory, selectedSubsubcategory });
   const [selectedFilters, setSelectedFilters] = useState({
@@ -350,6 +350,23 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
     }
   };
 
+    //const handleQuantityChange = (product, change) => {
+    //    const minQty = product.minOrderQuantity || 1;
+    //    const stockQty = product.stock;
+
+    //    const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+    //    const newQty = currentQty + change;
+
+    //    console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty);
+
+    //    if (newQty < minQty) return;
+    //    if (stockQty < newQty) return;
+
+    //    if (onAddToCart) {
+    //        onAddToCart(product, change);
+    //    }
+    //}
     const handleQuantityChange = (product, change) => {
         const minQty = product.minOrderQuantity || 1;
         const stockQty = product.stock;
@@ -362,12 +379,10 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
 
         if (newQty < minQty) return;
         if (stockQty < newQty) return;
+        console.log("Updating cart item quantity:", product.id, newQty);
 
-        if (onAddToCart) {
-            onAddToCart(product, change);
-        }
-    }
-
+        onUpdateQuantity(product.id, newQty);
+    };
   //const handleBuyNow = (product) => {
   //  // Add to cart first if not already added
   //  if (!getItemInCart(product.id)) {

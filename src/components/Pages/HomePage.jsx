@@ -11,7 +11,7 @@ import WelcomeSection from '../HomePage/WelcomeSection';
 import FloatingButtons from '../HomePage/FloatingButtons';
 import '../HomePage/HomePage.css';
 import { getProducts, getCategoriesWithProducts } from '../../api/api'; 
-const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCart, cartItems, onNavigate }) => {
+const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCart, onUpdateQuantity, cartItems, onNavigate }) => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
 
@@ -50,6 +50,7 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                updateCartItemQuantity={onUpdateQuantity}
                 cartItems={cartItems}
                 onNavigate={onNavigate}
             />
@@ -58,6 +59,7 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                updateCartItemQuantity={onUpdateQuantity}
                 cartItems={cartItems}
                 onNavigate={onNavigate}
             />
@@ -66,6 +68,7 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                updateCartItemQuantity={onUpdateQuantity}
                 cartItems={cartItems}
                 onNavigate={onNavigate}
             />
@@ -78,6 +81,7 @@ const HomePage = ({ onCategoryClick, wishlistItems, onWishlistToggle, onAddToCar
                 wishlistItems={wishlistItems}
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
+                updateCartItemQuantity={onUpdateQuantity}
                 cartItems={cartItems}
                 onNavigate={onNavigate}
             />
