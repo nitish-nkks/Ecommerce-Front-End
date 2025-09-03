@@ -1,11 +1,12 @@
 // src/components/Pages/ProductDetailsModal.jsx
 import React, { useState } from 'react';
 import { X, Heart, ShoppingCart, Star, Plus, Minus, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 
-const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onWishlistToggle }) => {
+const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onWishlistToggle, onAddToCart, onUpdateQuantity, cartItems = [], onNavigate }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedTab, setSelectedTab] = useState('description');
-
+  console.log('ProductDetailsModal rendered with product:', product);
   if (!isOpen || !product) return null;
 
   const isInWishlist = wishlistItems.some(item => item.id === product.id);
@@ -16,13 +17,13 @@ const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onW
     }
   };
 
-  const handleQuantityChange = (action) => {
-    if (action === 'increase' && quantity < product.stock) {
-      setQuantity(prev => prev + 1);
-    } else if (action === 'decrease' && quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
-  };
+  //const handleQuantityChange = (action) => {
+  //  if (action === 'increase' && quantity < product.stock) {
+  //    setQuantity(prev => prev + 1);
+  //  } else if (action === 'decrease' && quantity > 1) {
+  //    setQuantity(prev => prev - 1);
+  //  }
+  //};
 
   const totalPrice = (product.price * quantity).toFixed(2);
   const totalSavings = product.originalPrice ? ((product.originalPrice - product.price) * quantity).toFixed(2) : 0;
@@ -44,6 +45,56 @@ const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onW
         break;
     }
   };
+
+    const handleAddToCart = (product) => {
+        const minQty = product.minOrderQuantity || 1;
+        if (onAddToCart) {
+            onAddToCart(product, minQty);
+        }
+    };
+
+    const handleQuantityChange = (product, change) => {
+        const minQty = product.minOrderQuantity || 1;
+        const stockQty = product.stock;
+
+        const currentQty = getItemInCart(product.id)?.quantity || minQty;
+
+        const newQty = currentQty + change;
+
+        console.log('Current quantity:', currentQty, 'newQty:', newQty, 'stockQty: ', stockQty);
+
+        if (newQty < minQty) return;
+        if (stockQty < newQty) return;
+        console.log("Updating cart item quantity:", product.id, newQty);
+
+        onUpdateQuantity(product.id, newQty);
+    };
+    const [open, setOpen] = useState(false);
+    const handleWarningClose = () => setOpen(false);
+
+    const handleBuyNow = (product) => {
+        // Add to cart first if not already added
+        const isLoggedIn = !!localStorage.getItem("token");
+        console.log('LoggedIn', isLoggedIn);
+        if (!isLoggedIn) {
+            setOpen(true); // ⛔ show login modal
+            console.log('LoggedIn', isLoggedIn);
+            if (!getItemInCart(product.id)) {
+                console.log("Product not in cart, adding to cart first:", product);
+                handleAddToCart(product);
+            }
+            return;
+        }
+
+        console.log(onNavigate);
+        if (onNavigate) {
+            console.log('onNavigate', onNavigate);
+            onNavigate('checkout');
+        }
+    };
+    const getItemInCart = (productId) => {
+        return cartItems.find(item => item.id === productId);
+    };
 
   return (
     <div className="modal-overlay">
@@ -637,93 +688,144 @@ const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onW
             </div>
 
             {/* Price */}
-            <div className="price-section">
-              <div>
-                <span className="current-price">₹{product.price.toFixed(2)}</span>
-                {product.originalPrice && (
-                  <span className="original-price">₹{product.originalPrice.toFixed(2)}</span>
-                )}
-                {product.discount > 0 && (
-                  <span className="discount-badge">-{product.discount}%</span>
-                )}
-              </div>
-              {totalSavings > 0 && (
-                <div className="savings-text">
-                  You save ₹{((product.originalPrice - product.price) * quantity).toFixed(2)}
-                </div>
-              )}
-            </div>
+            {/*<div className="price-section">*/}
+            {/*  <div>*/}
+            {/*    <span className="current-price">₹{product.price.toFixed(2)}</span>*/}
+            {/*    {product.originalPrice && (*/}
+            {/*      <span className="original-price">₹{product.originalPrice.toFixed(2)}</span>*/}
+            {/*    )}*/}
+            {/*    {product.discount > 0 && (*/}
+            {/*      <span className="discount-badge">-{product.discount}%</span>*/}
+            {/*    )}*/}
+            {/*  </div>*/}
+            {/*  {totalSavings > 0 && (*/}
+            {/*    <div className="savings-text">*/}
+            {/*      You save ₹{((product.originalPrice - product.price) * quantity).toFixed(2)}*/}
+            {/*    </div>*/}
+            {/*  )}*/}
+            {/*</div>*/}
+                      <div className="product-price">
+                          {product.originalPrice && product.discount > 0 && (
+                              <div className="price-block">
+                                  <span className="original-price">₹{product.originalPrice.toFixed(2)}</span>
+                                  <span className="current-price">₹{product.currentPrice}</span>
+                              </div>
+                          )}
 
+                          {product.originalPrice && product.discount === 0 && (
+                              <span className="current-price"> ₹{product.originalPrice.toFixed(2)}</span>
+                          )}
+
+                          {product.discount > 0 && (
+                              <span className="discount">-{product.discount}%</span>
+                          )}
+                      </div>
             {/* Stock Info */}
             <div className="stock-info">
               {product.inStock ? `${product.stock} units available` : 'Out of stock'}
             </div>
 
             {/* Quantity Selector */}
-            <div className="quantity-section">
-              <div className="quantity-label">Quantity:</div>
-              <div className="quantity-controls">
-                <button 
-                  className="quantity-btn"
-                  onClick={() => handleQuantityChange('decrease')}
-                  disabled={quantity <= 1}
-                >
-                  <Minus size={16} />
-                </button>
-                <input
-                  className="quantity-input"
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => {
-                    const value = Math.max(1, Math.min(product.stock, parseInt(e.target.value) || 1));
-                    setQuantity(value);
-                  }}
-                />
-                <button 
-                  className="quantity-btn"
-                  onClick={() => handleQuantityChange('increase')}
-                  disabled={quantity >= product.stock}
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-            </div>
+            {/*<div className="quantity-section">*/}
+            {/*  <div className="quantity-label">Quantity:</div>*/}
+            {/*  <div className="quantity-controls">*/}
+            {/*    <button */}
+            {/*      className="quantity-btn"*/}
+            {/*      onClick={() => handleQuantityChange('decrease')}*/}
+            {/*      disabled={quantity <= 1}*/}
+            {/*    >*/}
+            {/*      <Minus size={16} />*/}
+            {/*    </button>*/}
+            {/*    <input*/}
+            {/*      className="quantity-input"*/}
+            {/*      type="number"*/}
+            {/*      value={quantity}*/}
+            {/*      onChange={(e) => {*/}
+            {/*        const value = Math.max(1, Math.min(product.stock, parseInt(e.target.value) || 1));*/}
+            {/*        setQuantity(value);*/}
+            {/*      }}*/}
+            {/*    />*/}
+            {/*    <button */}
+            {/*      className="quantity-btn"*/}
+            {/*      onClick={() => handleQuantityChange('increase')}*/}
+            {/*      disabled={quantity >= product.stock}*/}
+            {/*    >*/}
+            {/*      <Plus size={16} />*/}
+            {/*    </button>*/}
+            {/*  </div>*/}
+            {/*</div>*/}
 
             {/* Action Buttons */}
-            <div className="action-buttons">
-              <button className="primary-btn">
-                <ShoppingCart size={18} />
-                Add to Cart
-              </button>
-              <button className="secondary-btn">
-                Buy Now
-              </button>
-              <button 
-                className="wishlist-btn"
-                onClick={handleWishlistClick}
-                title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-              >
-                <Heart size={20} fill={isInWishlist ? 'currentColor' : 'none'} />
-              </button>
-            </div>
-
+            {/*<div className="action-buttons">*/}
+            {/*  <button className="primary-btn" onClick={() => handleAddToCart(product)} disabled={!product.inStock}>*/}
+            {/*    <ShoppingCart size={18} />*/}
+            {/*    Add to Cart*/}
+            {/*  </button>*/}
+            {/*  <button className="secondary-btn" onClick={() => handleBuyNow(product)} disabled={!product.inStock}>*/}
+            {/*    Buy Now*/}
+            {/*  </button>*/}
+            {/*  <button */}
+            {/*    className="wishlist-btn"*/}
+            {/*    onClick={handleWishlistClick}*/}
+            {/*    title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}*/}
+            {/*  >*/}
+            {/*    <Heart size={20} fill={isInWishlist ? 'currentColor' : 'none'} />*/}
+            {/*  </button>*/}
+            {/*</div>*/}
+                      <div className="product-buttons">
+                          {getItemInCart(product.id) && getItemInCart(product.id).quantity > 0 ? (
+                              <div className="quantity-selector">
+                                  <button
+                                      className="quantity-btn decrease"
+                                      onClick={() => handleQuantityChange(product, -1)}
+                                  >
+                                      -
+                                  </button>
+                                  <span className="quantity-display">
+                                      {getItemInCart(product.id).quantity}
+                                  </span>
+                                  <button
+                                      className="quantity-btn increase"
+                                      onClick={() => handleQuantityChange(product, 1)}
+                                  >
+                                      +
+                                  </button>
+                              </div>
+                          ) : (
+                              <button
+                                  className="cart-btn add-to-cart"
+                                  onClick={() => handleAddToCart(product)}
+                                  disabled={!product.inStock}
+                              >
+                                  <ShoppingCart size={14} />
+                                  Add to Cart
+                              </button>
+                          )}
+                          <button
+                              className="cart-btn buy-now"
+                              onClick={() => handleBuyNow(product)}
+                              disabled={!product.inStock}
+                          >
+                              Buy Now
+                          </button>
+                      </div>
             {/* Total Section */}
-            <div className="total-section">
-              <div className="total-row">
-                <span className="total-label">Subtotal ({quantity} items):</span>
-                <span className="total-value">₹{totalPrice}</span>
-              </div>
-              {totalSavings > 0 && (
-                <div className="total-row">
-                  <span className="total-label">You save:</span>
-                  <span className="savings-value">₹{totalSavings}</span>
-                </div>
-              )}
-              <div className="total-row">
-                <span className="total-label">Total:</span>
-                <span className="total-value">₹{totalPrice}</span>
-              </div>
-            </div>
+            {/*<div className="total-section">*/}
+            {/*  <div className="total-row">*/}
+            {/*    <span className="total-label">Subtotal ({quantity} items):</span>*/}
+            {/*    <span className="total-value">₹{totalPrice}</span>*/}
+            {/*  </div>*/}
+            {/*  {totalSavings > 0 && (*/}
+            {/*    <div className="total-row">*/}
+            {/*      <span className="total-label">You save:</span>*/}
+            {/*      <span className="savings-value">₹{totalSavings}</span>*/}
+            {/*    </div>*/}
+            {/*  )}*/}
+            {/*  <div className="total-row">*/}
+            {/*    <span className="total-label">Total:</span>*/}
+            {/*    <span className="total-value">₹{totalPrice}</span>*/}
+            {/*  </div>*/}
+            {/*</div>*/}
 
             {/* Share Section */}
             <div className="share-section">
@@ -755,14 +857,30 @@ const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onW
                 Description
               </button>
               <button 
-                className={`tab-btn ${selectedTab === 'specifications' ? 'active' : ''}`}
-                onClick={() => setSelectedTab('specifications')}
+                              className={`tab-btn ${selectedTab === 'specifications' ? 'active' : ''}`}
+                              onClick={() => {
+                                  setSelectedTab('specifications');
+
+                                  const modalContent = document.querySelector('.modal-content');
+                                  const target = document.getElementById('specifications-table');
+
+                                  if (modalContent && target) {
+                                      modalContent.scrollTo({
+                                          top: target.offsetTop,
+                                          behavior: 'smooth'
+                                      });
+                                  }
+                              }}
+
               >
                 Specifications
               </button>
               <button 
                 className={`tab-btn ${selectedTab === 'features' ? 'active' : ''}`}
-                onClick={() => setSelectedTab('features')}
+                              onClick={() => {
+                                  setSelectedTab('features');
+                                  document.getElementById('features-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }}
               >
                 Features
               </button>
@@ -777,18 +895,41 @@ const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onW
 
               {selectedTab === 'specifications' && (
                 <div>
-                  {product.specifications && (
-                    <table className="specifications-table">
-                      <tbody>
-                        {Object.entries(product.specifications).map(([key, value]) => (
-                          <tr key={key}>
-                            <th>{key}</th>
-                            <td>{value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
+                  {/*{product.specifications && (*/}
+                  {/*  <table className="specifications-table">*/}
+                  {/*    <tbody>*/}
+                  {/*      */}{/*{Object.entries(product.productSpecification).map(([key, value]) => (*/}
+                  {/*      */}{/*  <tr key={key}>*/}
+                  {/*      */}{/*    <th>{key}</th>*/}
+                  {/*      */}{/*    <td>{value}</td>*/}
+                  {/*      */}{/*  </tr>*/}
+                  {/*                            */}{/*))}*/}
+                  {/*                            {product.productSpecification.dosageApplication}*/}
+                  {/*    </tbody>*/}
+                  {/*  </table>*/}
+
+                                  {/*)}*/}
+                                  
+                                      {product.productSpecification && (
+                                          <table className="specifications-table">
+                                              <tbody>
+                                                  {Object.entries(product.productSpecification).map(([key, value]) => (
+                                                      value !== null && value !== "" && (
+                                                          <tr key={key}>
+                                                              <th>
+                                                                  {key
+                                                                      .replace(/([A-Z])/g, " $1")     // split camelCase
+                                                                      .replace(/^./, str => str.toUpperCase())} {/* capitalize first letter */}
+                                                              </th>
+                                                              <td>{value}</td>
+                                                          </tr>
+                                                      )
+                                                  ))}
+                                              </tbody>
+                                          </table>
+                                      )}
+                                 
+
                 </div>
               )}
 
@@ -807,7 +948,26 @@ const ProductDetailsModal = ({ product, isOpen, onClose, wishlistItems = [], onW
             </div>
           </div>
         </div>
-      </div>
+          </div>
+          {/* Custom Login Required Modal */}
+          <Dialog open={open} onClose={handleWarningClose}>
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogContent>
+                  Login is required to proceed with buying this product.
+              </DialogContent>
+              <DialogActions>
+                  <Button onClick={handleWarningClose}>Cancel</Button>
+                  <button
+                      className="login-btn"
+                      onClick={() => {
+                          setOpen(false);
+                          onNavigate && onNavigate("login");
+                      }}
+                  >
+                      🔑 LOGIN
+                  </button>
+              </DialogActions>
+          </Dialog>
     </div>
   );
 };

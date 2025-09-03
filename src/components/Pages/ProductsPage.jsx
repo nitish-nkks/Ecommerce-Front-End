@@ -269,6 +269,8 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
                         stock: p.stockQuantity,
                         inStock: p.stockQuantity > 0 ? true : false,
                         minOrderQuantity: p.minOrderQuantity,
+                        productSpecification: p.productSpecification,
+                        productImages: p.productImages
                     }));
 
                 setAllProducts(mappedProducts);
@@ -1495,14 +1497,18 @@ const ProductsPage = ({ wishlistItems = [], onWishlistToggle, selectedCategory =
       {/* Product Details Modal */}
       {showModal && selectedProduct && (
         <ProductDetailsModal
-          product={selectedProduct}
-          isOpen={showModal}
-          onClose={() => {
-            setShowModal(false);
-            setSelectedProduct(null);
-          }}
-          wishlistItems={wishlistItems}
-          onWishlistToggle={handleWishlistClick}
+                  product={selectedProduct}
+                  isOpen={showModal}
+                  onClose={() => {
+                      setShowModal(false);
+                      setSelectedProduct(null);
+                  }}
+                  wishlistItems={wishlistItems}
+                  onWishlistToggle={handleWishlistClick}
+                  onAddToCart={onAddToCart}
+                  onUpdateQuantity={onUpdateQuantity}
+                  cartItems={cartItems}
+                  onNavigate={onNavigate}
         />
           )}
 
